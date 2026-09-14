@@ -1,0 +1,29 @@
+{
+  "name": "battery-claim-app-react",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "build:backend": "vite build --outDir ../../outputs/celltrack-nodejs-backend/celltrack-nodejs/dist --emptyOutDir",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test src/**/*.test.js",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "antd": "^6.6.3",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "^3.10.1",
+    "vite": "latest",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.6"
+  }
+}
