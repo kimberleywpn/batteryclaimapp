@@ -9,7 +9,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8080', 
         changeOrigin: true,
         configure(proxy) {
           proxy.on('proxyReq', proxyRequest => proxyRequest.setHeader('origin', 'http://localhost:8080'));
