@@ -1,13 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Rubik:wght@500;600;700&display=swap');
 
 .bulk-receive-bar {
-  min-height: 52px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--line);
-  background: #f8fafb;
+  min-height: 38px;
+  margin-left: auto;
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
   display: flex;
   align-items: center;
   gap: 14px;
+  flex: 0 0 auto;
 }
 
 .bulk-receive-bar > span {
@@ -16,7 +17,8 @@
 }
 
 .bulk-receive-bar .primary {
-  margin-left: auto;
+  min-height: 34px;
+  padding: 6px 12px;
 }
 
 .claim-card:has(.claim-select) {
@@ -45,7 +47,17 @@
 }
 
 @media (width <= 600px) {
+  .claims-filter-row {
+    flex-wrap: wrap;
+  }
+
   .bulk-receive-bar {
+    width: 100%;
+    min-height: 46px;
+    margin-left: 0;
+    padding: 8px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
     flex-wrap: wrap;
   }
 
