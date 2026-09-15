@@ -780,6 +780,28 @@
     height: 100vh;
     max-height: 100vh;
   }
+
+  .workflow-modal .data-dialog .dialog-actions {
+    position: sticky;
+    z-index: 5;
+    bottom: -18px;
+    margin: 20px -18px -18px;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: #fff;
+    box-shadow: 0 -8px 18px rgb(23 33 38 / 8%);
+    flex-wrap: wrap;
+  }
+
+  .workflow-modal .data-dialog .dialog-actions .primary {
+    flex: 1 1 180px;
+    justify-content: center;
+  }
+
+  .workflow-modal .data-dialog .dialog-actions .secondary {
+    flex: 0 0 auto;
+    justify-content: center;
+  }
 }
 
 @media print {
