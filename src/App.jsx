@@ -555,7 +555,7 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
       <section className="surface workspace sales-workspace">
         <div className="list-toolbar">
           <Tabs
-            className="status-tabs"
+            className="status-tabs sales-status-tabs"
             activeKey={view}
             onChange={setView}
             items={salesViews.map((item) => ({

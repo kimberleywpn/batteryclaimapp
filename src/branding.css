@@ -285,6 +285,15 @@
   padding-inline: 6px;
 }
 
+.sales-status-tabs .ant-tabs-nav-list {
+  width: auto;
+}
+
+.workspace .sales-status-tabs .ant-tabs-tab {
+  flex: 0 0 auto;
+  padding-inline: 14px;
+}
+
 .status-tab-label {
   display: flex;
   flex-direction: column;
@@ -924,6 +933,10 @@
 
   .workspace .status-tabs {
     min-width: 720px;
+  }
+
+  .workspace .sales-status-tabs {
+    min-width: max-content;
   }
 
   .claims-date-sort {
