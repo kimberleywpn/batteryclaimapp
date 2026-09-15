@@ -659,31 +659,32 @@ const fileAsPhoto = (file) =>
     reader.onerror = () => reject(new Error(`Could Not Read ${file.name}`));
     reader.readAsDataURL(file);
   });
+const compressImageFile = async (file) => {
+  if (!file.type.startsWith("image/") || typeof createImageBitmap !== "function")
+    return file;
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  context.fillStyle = "#fff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await new Promise((resolve) =>
+    canvas.toBlob(resolve, "image/jpeg", 0.82),
+  );
+  return blob
+    ? new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+        type: "image/jpeg",
+      })
+    : file;
+};
 const fileAsAdminAttachment = async (file) => {
   if (!/\.(pdf|jpe?g|png|webp|docx|xlsx)$/i.test(file.name))
     throw new Error("Use PDF, JPG, PNG, WebP, DOCX Or XLSX Files.");
-  let uploadFile = file;
-  if (file.type.startsWith("image/") && typeof createImageBitmap === "function") {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext("2d");
-    context.fillStyle = "#fff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.82),
-    );
-    if (blob)
-      uploadFile = new File(
-        [blob],
-        file.name.replace(/\.[^.]+$/, ".jpg"),
-        { type: "image/jpeg" },
-      );
-  }
+  const uploadFile = await compressImageFile(file);
   const encoded = await fileAsPhoto(uploadFile);
   return { ...encoded, size: uploadFile.size };
 };
@@ -714,10 +715,13 @@ export function WarehouseData({ claim, onClose, onSaved }) {
     const files = [...fileList].filter((file) =>
       file.type.startsWith("image/"),
     );
-    const valid = files.filter((file) => file.size <= 10 * 1024 * 1024);
-    if (valid.length !== files.length)
-      setError("Photos Over 10 MB Were Skipped.");
     try {
+      const compressed = await Promise.all(files.map(compressImageFile));
+      const valid = compressed.filter(
+        (file) => file.size <= 10 * 1024 * 1024,
+      );
+      if (valid.length !== compressed.length)
+        setError("Photos Over 10 MB After Compression Were Skipped.");
       const added = await Promise.all(valid.map(fileAsPhoto));
       setPhotos((current) => ({
         ...current,
