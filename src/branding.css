@@ -513,6 +513,24 @@
   max-height: calc(100vh - 40px);
 }
 
+.warehouse-top-actions {
+  position: sticky;
+  z-index: 6;
+  top: 0;
+  float: right;
+  display: flex;
+  gap: 7px;
+}
+
+.warehouse-top-actions .sticky-close {
+  position: static;
+  float: none;
+}
+
+.warehouse-top-save {
+  display: none;
+}
+
 .report-modal {
   max-width: calc(100vw - 32px);
   padding-bottom: 0;
@@ -801,6 +819,25 @@
   .workflow-modal .data-dialog .dialog-actions .secondary {
     flex: 0 0 auto;
     justify-content: center;
+  }
+
+  .warehouse-top-save {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--blue);
+    border-radius: 5px;
+    color: #fff;
+    background: var(--blue);
+    place-items: center;
+    display: grid;
+  }
+
+  .warehouse-top-save:hover,
+  .warehouse-top-save:focus-visible {
+    color: #fff;
+    background: var(--blue-dark);
+    border-color: var(--blue-dark);
   }
 }
 

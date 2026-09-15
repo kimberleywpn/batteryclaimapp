@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
-import { Plus, Search as SearchIcon, X } from "lucide-react";
+import { Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
 import { completedMonthsBetween, shown, titleCase } from "../utils/claimFormatting";
@@ -718,14 +718,28 @@ export function WarehouseData({ claim, onClose, onSaved }) {
           onFinish={submit}
           onKeyDown={advanceFieldOnEnter}
         >
-          <AppButton
-            type="button"
-            className="sticky-close"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X size={20} />
-          </AppButton>
+          <div className="warehouse-top-actions">
+            <AppButton
+              type="button"
+              className="warehouse-top-save"
+              onClick={() => formApi.submit()}
+              disabled={busy}
+              loading={busy}
+              title="Save Warehouse Data"
+              aria-label="Save Warehouse Data"
+            >
+              {!busy && <Save size={20} />}
+            </AppButton>
+            <AppButton
+              type="button"
+              className="sticky-close"
+              onClick={onClose}
+              disabled={busy}
+              aria-label="Close"
+            >
+              <X size={20} />
+            </AppButton>
+          </div>
           <div className="panel-heading">
             <span className="eyebrow">Warehouse Data</span>
             <h2>
