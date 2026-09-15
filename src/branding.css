@@ -154,9 +154,6 @@
 
 .admin-attachments {
   margin-top: 14px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
 }
 
 .attachment-heading {
@@ -182,9 +179,6 @@
   font-size: 0.74rem;
 }
 
-.admin-attachments .ant-upload-list {
-  margin-bottom: 10px;
-}
 
 .case-history-timeline {
   margin: 10px 0 0;

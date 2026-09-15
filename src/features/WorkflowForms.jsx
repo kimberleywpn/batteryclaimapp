@@ -538,8 +538,8 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             },
           ]}
         />
-        <section className="admin-attachments">
-          <div className="attachment-heading">
+        <section className="upload-section admin-attachments">
+          <div className="upload-heading attachment-heading">
             <div>
               <strong><Paperclip size={16} /> Supporting Documents</strong>
               <span>Up To 8 Files, 5 MB Each, 20 MB Total</span>
@@ -549,6 +549,8 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           <AntUpload
             accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx"
             multiple
+            className="claim-photo-upload"
+            listType="picture-card"
             fileList={attachmentFileList}
             beforeUpload={(file, files) => {
               if (file.uid === files[0]?.uid) addAttachments(files);
@@ -560,8 +562,9 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             }}
           >
             {attachments.length < 8 && (
-              <AppButton type="button" className="secondary" disabled={attachmentLoading || busy}>
-                <Plus size={16} /> Add Files
+              <AppButton type="button" className="ant-upload-trigger" disabled={attachmentLoading || busy}>
+                <Plus size={18} />
+                <span>Upload</span>
               </AppButton>
             )}
           </AntUpload>
