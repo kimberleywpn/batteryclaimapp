@@ -428,7 +428,7 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               <span>{shown(claim.model)}</span>
             </h2>
             <p>
-              {shown(claim.dealerName || claim.customer)} | {shown(claim.area)}{" "}
+              {shown(claim.customer || claim.dealerName)} | {shown(claim.area)}{" "}
               | {shown(claim.salesperson)}
             </p>
           </div>
@@ -466,7 +466,7 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               ["Battery Serial Number", claim.serial],
               ["Report Date", claim.claimDate],
               ["CRF No.", claim.crfNo],
-              ["Customer Name", claim.dealerName || claim.customer],
+              ["Customer Name", claim.customer || claim.dealerName],
               ["Area", claim.area],
               ["Sales Agent", claim.salesperson],
               ["Invoice No.", claim.invoiceNo],
@@ -669,7 +669,7 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
                 </div>
                 <div>
                   <div className="customer">
-                    {shown(c.dealerName || c.customer)}
+                    {shown(c.customer || c.dealerName)}
                     {c.branchName && (
                       <small className="branch-code">{c.branchName}</small>
                     )}
@@ -1071,7 +1071,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
               </div>
               <div className="claim-party">
                 <div className="customer">
-                  {c.dealerName || c.customer || "Dealer Not Recorded"}
+                  {c.customer || c.dealerName || "Customer Not Recorded"}
                   {c.branchName && (
                     <small className="branch-code">{c.branchName}</small>
                   )}
