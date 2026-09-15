@@ -1,24 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Rubik:wght@500;600;700&display=swap');
 
-.bulk-receive-bar {
-  min-height: 38px;
-  margin-left: auto;
-  padding-left: 14px;
-  border-left: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.bulk-page-select {
   flex: 0 0 auto;
 }
 
-.bulk-receive-bar > span {
+.bulk-receive-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.bulk-receive-action > span {
   color: var(--muted);
   font-size: .8rem;
 }
 
-.bulk-receive-bar .primary {
+.bulk-receive-action .primary {
   min-height: 34px;
   padding: 6px 12px;
+}
+
+.claims-filter-row .claims-date-sort {
+  flex: 0 0 190px;
+  margin-left: 10px;
+  order: 99;
+}
+
+.claims-filter-row:not(:has(.bulk-receive-action)) .claims-date-sort {
+  margin-left: auto;
 }
 
 .claim-card:has(.claim-select) {
@@ -51,20 +62,23 @@
     flex-wrap: wrap;
   }
 
-  .bulk-receive-bar {
-    width: 100%;
-    min-height: 46px;
-    margin-left: 0;
-    padding: 8px 0 0;
-    border-top: 1px solid var(--line);
-    border-left: 0;
-    flex-wrap: wrap;
+  .bulk-page-select {
+    order: -2;
   }
 
-  .bulk-receive-bar .primary {
+  .bulk-receive-action {
     width: 100%;
     margin-left: 0;
-    justify-content: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .bulk-receive-action .primary {
+    margin-left: auto;
+  }
+
+  .claims-filter-row .claims-date-sort {
+    margin-left: auto;
   }
 
   .claim-card:has(.claim-select) {
