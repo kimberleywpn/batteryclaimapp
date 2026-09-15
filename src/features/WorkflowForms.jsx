@@ -785,15 +785,18 @@ export function WarehouseData({ claim, onClose, onSaved }) {
       uid: photo.id,
       name: photo.name,
       status: "done",
+      size: photo.size || Math.ceil(photo.base64.length * 0.75),
+      type: photo.type,
       url: `data:${photo.type};base64,${photo.base64}`,
     }));
     return (
       <section className="upload-section">
-        <div className="upload-heading">
+        <div className="upload-heading attachment-heading">
           <div>
             <strong>{title}</strong>
             <span>Up To 8 Photos, 10 MB Each</span>
           </div>
+          <span>{fileList.length} / 8</span>
         </div>
         <AntUpload
           className="claim-photo-upload"
@@ -801,18 +804,25 @@ export function WarehouseData({ claim, onClose, onSaved }) {
           multiple
           listType="picture-card"
           fileList={fileList}
-          beforeUpload={(file) => {
-            addPhotos(kind, [file]);
+          beforeUpload={(file, files) => {
+            if (file.uid === files[0]?.uid) addPhotos(kind, files);
             return AntUpload.LIST_IGNORE;
           }}
-          onPreview={(file) => setPreviewImage(file.url || file.thumbUrl || "")}
+          onPreview={(file) => {
+            const url = file.url || file.thumbUrl || "";
+            if (file.type?.startsWith("image/")) setPreviewImage(url);
+          }}
           onRemove={(file) => {
             removePhoto(kind, file.uid);
             return false;
           }}
         >
           {fileList.length >= 8 ? null : (
-            <AppButton className="ant-upload-trigger" type="button">
+            <AppButton
+              className="ant-upload-trigger"
+              type="button"
+              disabled={busy}
+            >
               <Plus size={18} />
               <span>Upload</span>
             </AppButton>
