@@ -5,6 +5,7 @@ import {
   brandName,
   completedMonthsBetween,
   elapsedDays,
+  formatDisplayDate,
   mileageDifference,
   shown,
   stageLabel,
@@ -15,6 +16,8 @@ test("formats display values consistently", () => {
   assert.equal(titleCase("COMPENSATION OF CLAIMS"), "Compensation Of Claims");
   assert.equal(shown(""), "Not Recorded");
   assert.equal(shown(0), 0);
+  assert.equal(shown("2026-09-15"), "15-09-2026");
+  assert.equal(formatDisplayDate("not-a-date"), "not-a-date");
   assert.equal(brandName("BB01"), "AtlasBX");
   assert.equal(brandName("BC01"), "MF Power");
   assert.equal(stageLabel("settlement"), "Claim Processing");

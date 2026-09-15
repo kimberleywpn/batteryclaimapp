@@ -4,10 +4,23 @@ import { Download, X } from "lucide-react";
 import dayjs from "dayjs";
 import { api } from "../api";
 import { AppButton, AppPagination, CheckFilter, SearchInput } from "../components/AppControls";
-import { additionalMetrics, brandName, shown, stageLabel, titleCase } from "../utils/claimFormatting";
+import { additionalMetrics, brandName, formatDisplayDate, shown, stageLabel, titleCase } from "../utils/claimFormatting";
 
 const { RangePicker } = DatePicker;
 const dateValue = (value) => (value ? dayjs(value) : null);
+const reportDateKeys = new Set([
+  "claimDate",
+  "invoiceDate",
+  "receivedDate",
+  "productDate",
+  "firstTestDate",
+  "secondTestDate",
+  "settleDate",
+  "additionalClaimDate",
+  "batteryInstalledDate",
+  "vehicleRegistrationDate",
+  "decisionDate",
+]);
 
 const reportColumns = [
   ["Case No.", "id"],
@@ -130,7 +143,13 @@ async function reportWorkbook(rows, columns) {
   const XLSX = await import("xlsx");
   const data = [
     columns.map(([label]) => label),
-    ...rows.map((row) => columns.map(([, key]) => row[key] ?? "")),
+    ...rows.map((row) =>
+      columns.map(([, key]) =>
+        reportDateKeys.has(key)
+          ? formatDisplayDate(row[key] ?? "")
+          : row[key] ?? "",
+      ),
+    ),
   ];
   const sheet = XLSX.utils.aoa_to_sheet(data);
   sheet["!cols"] = columns.map(([label, key]) => ({
@@ -160,7 +179,7 @@ async function downloadReport(rows, columns, name) {
     new Blob([await reportWorkbook(rows, columns)], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     }),
-    `battery-claims-${name}-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    `battery-claims-${name}-${dayjs().format("DD-MM-YYYY")}.xlsx`,
   );
 }
 const zipCrcTable = Array.from({ length: 256 }, (_, n) => {
@@ -293,7 +312,7 @@ async function downloadPhotoReport(rows, setBusy) {
     });
     downloadBlob(
       new Blob([zipArchive(files)], { type: "application/zip" }),
-      `battery-claims-with-photos-${new Date().toISOString().slice(0, 10)}.zip`,
+      `battery-claims-with-photos-${dayjs().format("DD-MM-YYYY")}.zip`,
     );
   } finally {
     setBusy(false);
@@ -463,7 +482,7 @@ export default function ReportPanel({ claims, onClose }) {
                 setFrom(dates?.[0]?.format("YYYY-MM-DD") || "");
                 setTo(dates?.[1]?.format("YYYY-MM-DD") || "");
               }}
-              format="DD/MM/YYYY"
+              format="DD-MM-YYYY"
               placeholders={["Start Date", "End Date"]}
               allowClear
             />

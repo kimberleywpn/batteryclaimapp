@@ -387,7 +387,7 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
             setTo(dates?.[1]?.format("YYYY-MM-DD") || "");
             setPeriod("");
           }}
-          format="DD/MM/YYYY"
+          format="DD-MM-YYYY"
           allowClear={false}
         />
         <Segmented

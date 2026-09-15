@@ -4,10 +4,15 @@ export const titleCase = (value) =>
     .toLowerCase()
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+export const formatDisplayDate = (value) => {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : value;
+};
+
 export const shown = (value) =>
   value === undefined || value === null || value === ""
     ? "Not Recorded"
-    : value;
+    : formatDisplayDate(value);
 
 export const brandName = (value) => {
   const group = String(value || "").toUpperCase();

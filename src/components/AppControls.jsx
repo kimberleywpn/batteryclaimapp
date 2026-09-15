@@ -56,7 +56,7 @@ export function AppDatePicker({ value, onChange, required = false, ...props }) {
       className="app-date-picker"
       value={value ? dayjs(value, "YYYY-MM-DD") : null}
       onChange={(date) => onChange(date?.format("YYYY-MM-DD") || "")}
-      format="DD/MM/YYYY"
+      format="DD-MM-YYYY"
       placeholder="Select Date"
       allowClear={!required}
       {...props}

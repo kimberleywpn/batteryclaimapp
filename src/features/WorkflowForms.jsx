@@ -234,7 +234,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
                 .slice(0, 3)
                 .map(
                   (item) =>
-                    `${item.caseNumber || item.id} | ${item.claimDate || "Date Not Recorded"} | ${titleCase(item.status)}`,
+                    `${item.caseNumber || item.id} | ${shown(item.claimDate)} | ${titleCase(item.status)}`,
                 )
                 .join("\n")}
             />

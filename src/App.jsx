@@ -37,7 +37,7 @@ import dayjs from "dayjs";
 import { api, setAuthToken } from "./api";
 import { AppButton, AppPagination, SearchInput } from "./components/AppControls";
 import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features/WorkflowForms";
-import { additionalMetrics, shown, stageLabel, titleCase } from "./utils/claimFormatting";
+import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } from "./utils/claimFormatting";
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
 const ReportPanel = lazy(() => import("./features/ReportPanel"));
@@ -148,7 +148,7 @@ function stageDetail(claim, view) {
       ["Second Test Date", data.secondTestDate],
     ].map(([label, date]) => (
       <span key={label} className={date ? "stage-date-complete" : undefined}>
-        {label} - {date || "Pending"}
+        {label} - {date ? formatDisplayDate(date) : "Pending"}
       </span>
     ));
   }
@@ -235,7 +235,7 @@ function CaseHistory({ claimId }) {
                 <small>
                   {entry.actor || "System"} ·{" "}
                   {entry.at
-                    ? new Date(entry.at).toLocaleString()
+                    ? dayjs(entry.at).format("DD-MM-YYYY, h:mm:ss A")
                     : "Time Not Recorded"}
                 </small>
               </div>
@@ -981,7 +981,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                   {c.model || "Model Not Recorded"}
                 </div>
                 <div className="secondary-text">
-                  Report Date: {c.claimDate || "Not Recorded"}
+                  Report Date: {shown(c.claimDate)}
                 </div>
               </div>
               <div className="claim-party">
@@ -1098,7 +1098,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
         <p>Update {selectedIds.length.toLocaleString()} selected case{selectedIds.length === 1 ? "" : "s"} and move them to Warehouse Inspecting.</p>
         <label className="bulk-date-field">
           <span>Date Received</span>
-          <DatePicker value={receiveDate} onChange={setReceiveDate} format="DD/MM/YYYY" allowClear={false} />
+          <DatePicker value={receiveDate} onChange={setReceiveDate} format="DD-MM-YYYY" allowClear={false} />
         </label>
         {bulkResult?.error && <Alert type="error" showIcon message={bulkResult.error} />}
         {bulkResult && !bulkResult.error && <Alert type={bulkResult.failed ? "warning" : "success"} showIcon message={`${bulkResult.received} received successfully${bulkResult.failed ? `; ${bulkResult.failed} could not be updated.` : "."}`} />}
