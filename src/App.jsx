@@ -43,6 +43,7 @@ import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } fr
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
 const ReportPanel = lazy(() => import("./features/ReportPanel"));
 const MobileCodeScanner = lazy(() => import("./components/MobileCodeScanner"));
+const brandLogo = `${import.meta.env.BASE_URL}kai-shen-logo.svg`;
 
 const pages = [
   { id: "claims", label: "Claims Operations", icon: List },
@@ -78,7 +79,7 @@ function SignIn({ onSuccess }) {
         onFinish={submit}
       >
         <div className="signin-brand">
-          <img className="brand-logo" src="/kai-shen-logo.svg" alt="Kai Shen" />
+          <img className="brand-logo" src={brandLogo} alt="Kai Shen" />
           <div>
             <strong>Battery Claim App</strong>
             <span>Operations workspace</span>
@@ -1209,7 +1210,7 @@ function App() {
     <div className="app">
       <header>
         <div className="brand">
-          <img className="brand-logo" src="/kai-shen-logo.svg" alt="Kai Shen" />
+          <img className="brand-logo" src={brandLogo} alt="Kai Shen" />
           <strong>Battery Claim App</strong>
         </div>
         <div className="account">
