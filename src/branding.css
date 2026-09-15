@@ -1077,3 +1077,37 @@
     margin-left: 0;
   }
 }
+
+.case-attachment-grid {
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+}
+
+.case-document-link {
+  min-width: 0;
+  min-height: 96px;
+  color: var(--blue-dark);
+  background: #f7fafb;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 10px;
+  text-decoration: none;
+}
+
+.case-document-link:hover {
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+.case-document-link span {
+  width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

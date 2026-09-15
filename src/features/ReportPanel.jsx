@@ -277,12 +277,16 @@ async function downloadPhotoReport(rows, setBusy) {
   setBusy(true);
   try {
     const files = [];
-    for (const row of rows.filter(
-      (item) => Number(item.batteryPhotos) + Number(item.testPhotos) > 0,
-    )) {
-      const photos = await api(
-        `/api/claims/${encodeURIComponent(row.claimId)}/photos`,
-      );
+    for (const row of rows) {
+      const claimId = encodeURIComponent(row.claimId);
+      const hasWarehousePhotos =
+        Number(row.batteryPhotos) + Number(row.testPhotos) > 0;
+      const [photos, attachmentResult] = await Promise.all([
+        hasWarehousePhotos
+          ? api(`/api/claims/${claimId}/photos`)
+          : Promise.resolve({ battery: [], test: [] }),
+        api(`/api/claims/${claimId}/attachments`),
+      ]);
       for (const [kind, folder] of [
         ["battery", "Battery Photos"],
         ["test", "Test Result Photos"],
@@ -299,6 +303,13 @@ async function downloadPhotoReport(rows, setBusy) {
             data: base64Bytes(photo.base64),
           });
         }
+      for (const [index, attachment] of (
+        attachmentResult.attachments || []
+      ).entries())
+        files.push({
+          name: `Admin Attachments/${filePart(row.id)}_${filePart(row.serial)}_${String(index + 1).padStart(2, "0")}_${filePart(attachment.name)}`,
+          data: base64Bytes(attachment.base64),
+        });
     }
     files.unshift({
       name: "Claims Report - Full Data.xlsx",

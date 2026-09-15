@@ -257,15 +257,21 @@ function CaseHistory({ claimId }) {
 }
 function CasePhotos({ claimId }) {
   const [photos, setPhotos] = useState({ battery: [], test: [] });
+  const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let active = true;
-    api(`/api/claims/${encodeURIComponent(claimId)}/photos`)
-      .then((files) => {
-        if (active)
+    const id = encodeURIComponent(claimId);
+    Promise.all([
+      api(`/api/claims/${id}/photos`).catch(() => ({ battery: [], test: [] })),
+      api(`/api/claims/${id}/attachments`).catch(() => ({ attachments: [] })),
+    ])
+      .then(([files, adminFiles]) => {
+        if (active) {
           setPhotos({ battery: files.battery || [], test: files.test || [] });
+          setAttachments(adminFiles.attachments || []);
+        }
       })
-      .catch(() => {})
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -278,47 +284,86 @@ function CasePhotos({ claimId }) {
     ["Test Result Photos", "test"],
   ];
   return (
-    <div className="preview-section case-photos">
-      <h3>Warehouse Attachments</h3>
+    <Image.PreviewGroup>
       {loading ? (
-        <div className="photo-preview-empty">
+        <div className="preview-section photo-preview-empty">
           <Spin size="small" />
         </div>
       ) : (
-        <Image.PreviewGroup>
-          <div className="case-photo-groups">
-            {groups.map(([title, key]) => (
-              <section key={key}>
-                <div className="case-photo-title">
-                  <strong>{title}</strong>
-                  <span>{photos[key].length}</span>
-                </div>
-                {photos[key].length ? (
-                  <div className="case-photo-grid">
-                    {photos[key].map((photo) => (
-                      <figure key={photo.id}>
-                        <Image
-                          src={`data:${photo.type};base64,${photo.base64}`}
-                          alt={photo.name || title}
-                          preview={{ mask: "Preview" }}
-                        />
-                        <figcaption>{photo.name || "Photo"}</figcaption>
-                      </figure>
-                    ))}
+        <>
+          <div className="preview-section case-photos">
+            <h3>Warehouse Attachments</h3>
+            <div className="case-photo-groups">
+              {groups.map(([title, key]) => (
+                <section key={key}>
+                  <div className="case-photo-title">
+                    <strong>{title}</strong>
+                    <span>{photos[key].length}</span>
                   </div>
-                ) : (
-                  <Empty
-                    className="compact-empty photo-preview-empty"
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="No Photos Attached"
-                  />
-                )}
-              </section>
-            ))}
+                  {photos[key].length ? (
+                    <div className="case-photo-grid">
+                      {photos[key].map((photo) => (
+                        <figure key={photo.id}>
+                          <Image
+                            src={`data:${photo.type};base64,${photo.base64}`}
+                            alt={photo.name || title}
+                            preview={{ mask: "Preview" }}
+                          />
+                          <figcaption>{photo.name || "Photo"}</figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  ) : (
+                    <Empty
+                      className="compact-empty photo-preview-empty"
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description="No Photos Attached"
+                    />
+                  )}
+                </section>
+              ))}
+            </div>
           </div>
-        </Image.PreviewGroup>
+          <div className="preview-section case-photos admin-preview-attachments">
+            <h3>Admin Attachments</h3>
+            {attachments.length ? (
+              <div className="case-photo-grid case-attachment-grid">
+                {attachments.map((file) => {
+                  const url = `data:${file.type};base64,${file.base64}`;
+                  return file.type?.startsWith("image/") ? (
+                    <figure key={file.id}>
+                      <Image
+                        src={url}
+                        alt={file.name || "Admin attachment"}
+                        preview={{ mask: "Preview" }}
+                      />
+                      <figcaption>{file.name || "Image"}</figcaption>
+                    </figure>
+                  ) : (
+                    <a
+                      className="case-document-link"
+                      href={url}
+                      download={file.name || "attachment"}
+                      key={file.id}
+                      title={file.name}
+                    >
+                      <FileText size={24} />
+                      <span>{file.name || "Attachment"}</span>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : (
+              <Empty
+                className="compact-empty photo-preview-empty"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="No Admin Attachments"
+              />
+            )}
+          </div>
+        </>
       )}
-    </div>
+    </Image.PreviewGroup>
   );
 }
 function CasePreview({ claim, onClose, onEdit, onDelete }) {
