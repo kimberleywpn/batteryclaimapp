@@ -917,20 +917,6 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
           </div>
         </div>
         <div className="progress-subfilters-react claims-filter-row">
-          {view === "reported" && canManage && (
-            <Checkbox
-              className="bulk-page-select"
-              checked={allVisibleSelected}
-              indeterminate={!allVisibleSelected && selectableVisible.some((claim) => selectedIds.includes(claim.id))}
-              disabled={!selectableVisible.length}
-              onChange={(event) => {
-                const ids = selectableVisible.map((claim) => claim.id);
-                setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...ids])] : current.filter((id) => !ids.includes(id)));
-              }}
-            >
-              Select This Page
-            </Checkbox>
-          )}
           {!!subfilters.length && (
             <Segmented
               value={subfilter}
@@ -940,14 +926,6 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                 label: `${item.label} ${baseFiltered.filter(item.test).length.toLocaleString()}`,
               }))}
             />
-          )}
-          {view === "reported" && canManage && (
-            <div className="bulk-receive-action">
-              <span>{selectedIds.length.toLocaleString()} selected</span>
-              <AppButton className="primary" disabled={!selectedIds.length} onClick={() => { setBulkResult(null); setBulkOpen(true); }}>
-                Mark As Received
-              </AppButton>
-            </div>
           )}
           <Select
             className="claims-date-sort"
@@ -959,6 +937,25 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
               { value: "asc", label: "Report Date: Oldest" },
             ]}
           />
+          {view === "reported" && canManage && (
+            <div className="bulk-receive-bar">
+              <Checkbox
+                checked={allVisibleSelected}
+                indeterminate={!allVisibleSelected && selectableVisible.some((claim) => selectedIds.includes(claim.id))}
+                disabled={!selectableVisible.length}
+                onChange={(event) => {
+                  const ids = selectableVisible.map((claim) => claim.id);
+                  setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...ids])] : current.filter((id) => !ids.includes(id)));
+                }}
+              >
+                Select This Page
+              </Checkbox>
+              <span>{selectedIds.length.toLocaleString()} selected</span>
+              <AppButton className="primary" disabled={!selectedIds.length} onClick={() => { setBulkResult(null); setBulkOpen(true); }}>
+                Mark As Received
+              </AppButton>
+            </div>
+          )}
         </div>
         <div className="claim-list">
           {visible.map((c) => (
