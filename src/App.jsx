@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Checkbox,
+  DatePicker,
   Empty,
   Form,
   Image,
@@ -184,6 +186,7 @@ const historyLabels = {
   created: "Claim Reported",
   intake: "Claim Information Updated",
   warehouse: "Warehouse Data Saved",
+  "warehouse-bulk-received": "Received In Bulk",
   admin: "Claim Processing Updated",
   approval: "Sales Decision Submitted",
   imported: "Historical Claim Imported",
@@ -762,6 +765,11 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
   const [warehouseClaim, setWarehouseClaim] = useState(null);
   const [deleteClaim, setDeleteClaim] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [receiveDate, setReceiveDate] = useState(dayjs());
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
   const canManage = ["owner", "admin"].includes(session.role);
   const pageSize = 10;
   const counts = useMemo(
@@ -809,10 +817,35 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
     (page - 1) * pageSize,
     page * pageSize,
   );
+  const selectableVisible = view === "reported" ? visible.filter((claim) => claim.status === "reported" && !claim.warehouse?.receivedDate) : [];
+  const allVisibleSelected = selectableVisible.length > 0 && selectableVisible.every((claim) => selectedIds.includes(claim.id));
   useEffect(() => setPage(1), [query, view]);
   useEffect(() => setSubfilter("all"), [view]);
   useEffect(() => setPage(1), [subfilter]);
   useEffect(() => setPage(1), [dateSort]);
+  useEffect(() => setSelectedIds([]), [view]);
+  async function bulkReceive() {
+    setBulkBusy(true);
+    setBulkResult(null);
+    try {
+      const selected = claims.filter((claim) => selectedIds.includes(claim.id));
+      const result = await api("/api/claims/bulk-receive", {
+        method: "POST",
+        body: JSON.stringify({
+          receivedDate: receiveDate.format("YYYY-MM-DD"),
+          items: selected.map(({ id, version }) => ({ id, version })),
+        }),
+      });
+      (result.claims || []).forEach(onClaimSaved);
+      setSelectedIds((current) => current.filter((id) => !(result.claims || []).some((claim) => claim.id === id)));
+      setBulkResult({ received: result.claims?.length || 0, failed: result.errors?.length || 0 });
+      if (!result.errors?.length) setBulkOpen(false);
+    } catch (err) {
+      setBulkResult({ error: err.message });
+    } finally {
+      setBulkBusy(false);
+    }
+  }
   const metric = (icon, value, label, tone) => (
     <article>
       <span className={`metric-icon ${tone}`}>{icon}</span>
@@ -905,9 +938,37 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
             ]}
           />
         </div>
+        {view === "reported" && canManage && (
+          <div className="bulk-receive-bar">
+            <Checkbox
+              checked={allVisibleSelected}
+              indeterminate={!allVisibleSelected && selectableVisible.some((claim) => selectedIds.includes(claim.id))}
+              disabled={!selectableVisible.length}
+              onChange={(event) => {
+                const ids = selectableVisible.map((claim) => claim.id);
+                setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...ids])] : current.filter((id) => !ids.includes(id)));
+              }}
+            >
+              Select This Page
+            </Checkbox>
+            <span>{selectedIds.length.toLocaleString()} selected</span>
+            <AppButton className="primary" disabled={!selectedIds.length} onClick={() => { setBulkResult(null); setBulkOpen(true); }}>
+              Mark As Received
+            </AppButton>
+          </div>
+        )}
         <div className="claim-list">
           {visible.map((c) => (
             <article className="claim-card" key={c.id}>
+              {view === "reported" && canManage && (
+                <Checkbox
+                  className="claim-select"
+                  checked={selectedIds.includes(c.id)}
+                  disabled={c.status !== "reported" || !!c.warehouse?.receivedDate}
+                  aria-label={`Select ${c.caseNumber || c.serial}`}
+                  onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, c.id] : current.filter((id) => id !== c.id))}
+                />
+              )}
               <div className="claim-identity">
                 <AppButton
                   className="serial-link"
@@ -1025,6 +1086,23 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
           }}
         />
       )}
+      <Modal
+        title="Mark Cases As Received"
+        open={bulkOpen}
+        okText="Confirm Received"
+        confirmLoading={bulkBusy}
+        okButtonProps={{ disabled: !receiveDate || !selectedIds.length }}
+        onOk={bulkReceive}
+        onCancel={() => !bulkBusy && setBulkOpen(false)}
+      >
+        <p>Update {selectedIds.length.toLocaleString()} selected case{selectedIds.length === 1 ? "" : "s"} and move them to Warehouse Inspecting.</p>
+        <label className="bulk-date-field">
+          <span>Date Received</span>
+          <DatePicker value={receiveDate} onChange={setReceiveDate} format="DD/MM/YYYY" allowClear={false} />
+        </label>
+        {bulkResult?.error && <Alert type="error" showIcon message={bulkResult.error} />}
+        {bulkResult && !bulkResult.error && <Alert type={bulkResult.failed ? "warning" : "success"} showIcon message={`${bulkResult.received} received successfully${bulkResult.failed ? `; ${bulkResult.failed} could not be updated.` : "."}`} />}
+      </Modal>
     </>
   );
 }
