@@ -180,12 +180,28 @@
 }
 
 
+.progress-subfilters-react {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
 .progress-subfilters-react .ant-segmented {
-  max-width: 100%;
+  width: max-content;
+  min-width: max-content;
+  max-width: none;
+  flex: 0 0 auto;
 }
 
 .progress-subfilters-react .ant-segmented-group {
-  overflow-x: auto;
+  width: max-content;
+  overflow: visible;
+}
+
+.progress-subfilters-react .ant-segmented-item {
+  flex: 0 0 auto;
 }
 
 .signin-panel .ant-input-affix-wrapper {
