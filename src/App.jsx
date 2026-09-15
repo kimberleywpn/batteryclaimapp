@@ -52,6 +52,13 @@ const pages = [
   { id: "sales", label: "Sales Approvals", icon: ShieldCheck },
   { id: "dashboard", label: "Management Dashboard", icon: BarChart3 },
 ];
+
+const pagesForRole = (role) => {
+  if (role === "manager") return pages.filter((item) => item.id === "dashboard");
+  if (role === "sales") return pages.filter((item) => item.id !== "claims");
+  return pages;
+};
+
 function SignIn({ onSuccess }) {
   const [formApi] = Form.useForm();
   const [error, setError] = useState("");
@@ -1193,7 +1200,7 @@ function App() {
   async function load(user) {
     setSession(user);
     if (!user) return;
-    if (user.role === "sales") setPage("sales");
+    setPage(pagesForRole(user.role)[0].id);
     try {
       setClaims((await api("/api/claims")).claims || []);
     } catch (err) {
@@ -1257,9 +1264,7 @@ function App() {
       </div>
     );
   if (!session) return <SignIn onSuccess={load} />;
-  const allowed = pages.filter(
-    (item) => session.role !== "sales" || item.id !== "claims",
-  );
+  const allowed = pagesForRole(session.role);
   return (
     <div className="app">
       <header>
