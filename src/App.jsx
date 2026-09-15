@@ -28,6 +28,7 @@ import {
   Plus,
   Printer,
   Search as SearchIcon,
+  ScanLine,
   ShieldCheck,
   Trash2,
   Truck,
@@ -41,6 +42,7 @@ import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } fr
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
 const ReportPanel = lazy(() => import("./features/ReportPanel"));
+const MobileCodeScanner = lazy(() => import("./components/MobileCodeScanner"));
 
 const pages = [
   { id: "claims", label: "Claims Operations", icon: List },
@@ -768,6 +770,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const [receiveDate, setReceiveDate] = useState(dayjs());
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
   const canManage = ["owner", "admin"].includes(session.role);
@@ -907,6 +910,14 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
             }))}
           />
           <div className="workspace-list-actions">
+            <Tooltip title="Scan QR Code Or Barcode">
+              <AppButton
+                className="secondary mobile-scan-button"
+                icon={<ScanLine size={18} />}
+                aria-label="Scan QR Code Or Barcode"
+                onClick={() => setScannerOpen(true)}
+              />
+            </Tooltip>
             <SearchInput
               className="app-search-input workspace-search"
               value={query}
@@ -916,6 +927,18 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
             />
           </div>
         </div>
+        {scannerOpen && (
+          <Suspense fallback={null}>
+            <MobileCodeScanner
+              open={scannerOpen}
+              onClose={() => setScannerOpen(false)}
+              onScanned={(value) => {
+                setQuery(value);
+                setPage(1);
+              }}
+            />
+          </Suspense>
+        )}
         <div className="progress-subfilters-react claims-filter-row">
           {!!subfilters.length && (
             <Segmented

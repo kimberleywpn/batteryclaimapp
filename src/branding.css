@@ -323,6 +323,82 @@
   text-transform: none;
 }
 
+.workspace-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-scan-button {
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
+}
+
+.scanner-viewport {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  background: #07171c;
+}
+
+.scanner-viewport video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-guide {
+  position: absolute;
+  inset: 20%;
+  border: 2px solid #fff;
+  border-radius: 6px;
+  box-shadow: 0 0 0 999px #07171c40;
+  pointer-events: none;
+}
+
+.scanner-help {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.scanner-photo-button {
+  width: 100%;
+  height: 42px;
+  margin-top: 12px;
+}
+
+.scanner-photo-button label {
+  cursor: pointer;
+}
+
+.scanner-photo-button input {
+  display: none;
+}
+
+@media (width <= 680px) {
+  .mobile-scan-button {
+    display: inline-flex;
+  }
+
+  .workspace-list-actions {
+    width: 100%;
+  }
+
+  .workspace-list-actions .workspace-search {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .form-layout > .app-alert.wide {
   grid-column: 1 / -1;
   margin: 0;
@@ -921,22 +997,37 @@
 }
 
 @media (max-width: 760px) {
-  .workspace-list-actions {
-    width: 210px;
-    flex: 0 0 210px;
+  .app .metrics {
+    display: none;
   }
 
+  .workspace-list-actions {
+    order: -1;
+    width: 100%;
+    flex: 0 0 auto;
+    margin-left: 0;
+  }
 
   .workspace .list-toolbar {
-    overflow-x: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    overflow: visible;
+    padding: 12px;
   }
 
   .workspace .status-tabs {
-    min-width: 720px;
+    width: 100%;
+    min-width: 0;
   }
 
   .workspace .sales-status-tabs {
     min-width: max-content;
+  }
+
+  .workspace-list-actions .workspace-search {
+    width: auto;
+    flex: 1;
   }
 
   .claims-date-sort {
