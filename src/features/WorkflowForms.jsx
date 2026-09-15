@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
-import { Plus, Save, Search as SearchIcon, X } from "lucide-react";
+import { Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
 import { completedMonthsBetween, shown, titleCase } from "../utils/claimFormatting";
@@ -302,7 +302,17 @@ export function AdminProcess({ claim, onClose, onSaved }) {
   );
   const [formApi] = Form.useForm();
   const [busy, setBusy] = useState(false);
+  const [attachmentLoading, setAttachmentLoading] = useState(true);
+  const [attachments, setAttachments] = useState([]);
   const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    api(`/api/claims/${claim.id}/attachments`)
+      .then((result) => active && setAttachments(result.attachments || []))
+      .catch((err) => active && setError(err.message))
+      .finally(() => active && setAttachmentLoading(false));
+    return () => { active = false; };
+  }, [claim.id]);
   const approvalStatus =
     claim.approval?.decision === "approved"
       ? "Approved"
@@ -315,6 +325,10 @@ export function AdminProcess({ claim, onClose, onSaved }) {
     claim.status === "settlement" || claim.status === "complete";
   async function save(action) {
     setError("");
+    if (attachmentLoading) {
+      setError("Wait For Supporting Documents To Finish Loading.");
+      return;
+    }
     if (action === "submit" && !formApi.getFieldValue("result")) {
       formApi.setFields([
         { name: "result", errors: ["Select A Result Before Sending."] },
@@ -332,7 +346,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
       const data = formApi.getFieldsValue(true);
       const result = await api(`/api/claims/${claim.id}/admin`, {
         method: "PUT",
-        body: JSON.stringify({ version: claim.version, action, data }),
+        body: JSON.stringify({ version: claim.version, action, data, files: attachments }),
       });
       if (action === "submit") {
         notification.success({
@@ -367,6 +381,35 @@ export function AdminProcess({ claim, onClose, onSaved }) {
       )}
     </Form.Item>
   );
+  async function addAttachments(fileList) {
+    setError("");
+    const available = 8 - attachments.length;
+    const selected = [...fileList].slice(0, available);
+    if (selected.length < fileList.length) setError("Maximum 8 Attachments Per Case.");
+    try {
+      const added = await Promise.all(selected.map(fileAsAdminAttachment));
+      const valid = added.filter((file) => file.size <= 5 * 1024 * 1024);
+      if (valid.length !== added.length) setError("Attachments Over 5 MB Were Skipped.");
+      setAttachments((current) => {
+        const next = [...current, ...valid].slice(0, 8);
+        const total = next.reduce((sum, file) => sum + (file.size || Math.ceil(file.base64.length * 0.75)), 0);
+        if (total > 20 * 1024 * 1024) {
+          setError("Maximum Total Attachment Size Is 20 MB Per Case.");
+          return current;
+        }
+        return next;
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+  const attachmentFileList = attachments.map((file) => ({
+    uid: file.id,
+    name: file.name,
+    status: "done",
+    size: file.size || Math.ceil(file.base64.length * 0.75),
+    url: `data:${file.type};base64,${file.base64}`,
+  }));
   return (
     <Modal
       className="workflow-modal admin-process-modal"
@@ -430,7 +473,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
               <AppButton
                 type="button"
                 className="primary"
-                disabled={busy}
+                disabled={busy || attachmentLoading}
                 onClick={() => save("submit")}
               >
                 Send For Approval
@@ -495,6 +538,34 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             },
           ]}
         />
+        <section className="admin-attachments">
+          <div className="attachment-heading">
+            <div>
+              <strong><Paperclip size={16} /> Supporting Documents</strong>
+              <span>Up To 8 Files, 5 MB Each, 20 MB Total</span>
+            </div>
+            <span>{attachments.length} / 8</span>
+          </div>
+          <AntUpload
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx"
+            multiple
+            fileList={attachmentFileList}
+            beforeUpload={(file, files) => {
+              if (file.uid === files[0]?.uid) addAttachments(files);
+              return AntUpload.LIST_IGNORE;
+            }}
+            onRemove={(file) => {
+              setAttachments((current) => current.filter((item) => item.id !== file.uid));
+              return false;
+            }}
+          >
+            {attachments.length < 8 && (
+              <AppButton type="button" className="secondary" disabled={attachmentLoading || busy}>
+                <Plus size={16} /> Add Files
+              </AppButton>
+            )}
+          </AntUpload>
+        </section>
         {error && (
           <Alert className="app-alert" type="error" showIcon message={error} />
         )}
@@ -505,6 +576,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           <AppButton
             className="primary"
             loading={busy}
+            disabled={attachmentLoading}
             onClick={() =>
               save(
                 claim.status === "complete"
@@ -521,6 +593,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             <AppButton
               className="primary"
               loading={busy}
+              disabled={attachmentLoading}
               onClick={() => save("complete")}
             >
               Complete Claim
@@ -563,6 +636,34 @@ const fileAsPhoto = (file) =>
     reader.onerror = () => reject(new Error(`Could Not Read ${file.name}`));
     reader.readAsDataURL(file);
   });
+const fileAsAdminAttachment = async (file) => {
+  if (!/\.(pdf|jpe?g|png|webp|docx|xlsx)$/i.test(file.name))
+    throw new Error("Use PDF, JPG, PNG, WebP, DOCX Or XLSX Files.");
+  let uploadFile = file;
+  if (file.type.startsWith("image/") && typeof createImageBitmap === "function") {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.82),
+    );
+    if (blob)
+      uploadFile = new File(
+        [blob],
+        file.name.replace(/\.[^.]+$/, ".jpg"),
+        { type: "image/jpeg" },
+      );
+  }
+  const encoded = await fileAsPhoto(uploadFile);
+  return { ...encoded, size: uploadFile.size };
+};
 export function WarehouseData({ claim, onClose, onSaved }) {
   const initialValues = Object.fromEntries(
     warehouseFieldNames.map((name) => [name, claim.warehouse?.[name] || ""]),
