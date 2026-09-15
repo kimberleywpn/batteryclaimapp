@@ -32,7 +32,7 @@ import {
   X,
 } from "lucide-react";
 import dayjs from "dayjs";
-import { api } from "./api";
+import { api, setAuthToken } from "./api";
 import { AppButton, AppPagination, SearchInput } from "./components/AppControls";
 import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features/WorkflowForms";
 import { additionalMetrics, shown, stageLabel, titleCase } from "./utils/claimFormatting";
@@ -53,14 +53,12 @@ function SignIn({ onSuccess }) {
     setBusy(true);
     setError("");
     try {
-      onSuccess(
-        (
-          await api("/api/login", {
-            method: "POST",
-            body: JSON.stringify(values),
-          })
-        ).user,
-      );
+      const result = await api("/api/login", {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
+      setAuthToken(result.token);
+      onSuccess(result.user);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -1086,7 +1084,11 @@ function App() {
     };
   }, [session?.id]);
   async function signOut() {
-    await api("/api/logout", { method: "POST", body: "{}" });
+    try {
+      await api("/api/logout", { method: "POST", body: "{}" });
+    } finally {
+      setAuthToken("");
+    }
     setSession(null);
     setClaims([]);
   }
