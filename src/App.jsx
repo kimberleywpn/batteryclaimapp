@@ -327,40 +327,48 @@ function CasePhotos({ claimId }) {
           </div>
           <div className="preview-section case-photos admin-preview-attachments">
             <h3>Admin Attachments</h3>
-            {attachments.length ? (
-              <div className="case-photo-grid case-attachment-grid">
-                {attachments.map((file) => {
-                  const url = `data:${file.type};base64,${file.base64}`;
-                  return file.type?.startsWith("image/") ? (
-                    <figure key={file.id}>
-                      <Image
-                        src={url}
-                        alt={file.name || "Admin attachment"}
-                        preview={{ mask: "Preview" }}
-                      />
-                      <figcaption>{file.name || "Image"}</figcaption>
-                    </figure>
-                  ) : (
-                    <a
-                      className="case-document-link"
-                      href={url}
-                      download={file.name || "attachment"}
-                      key={file.id}
-                      title={file.name}
-                    >
-                      <FileText size={24} />
-                      <span>{file.name || "Attachment"}</span>
-                    </a>
-                  );
-                })}
-              </div>
-            ) : (
-              <Empty
-                className="compact-empty photo-preview-empty"
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No Admin Attachments"
-              />
-            )}
+            <div className="case-photo-groups admin-attachment-groups">
+              <section>
+                <div className="case-photo-title">
+                  <strong>Supporting Documents</strong>
+                  <span>{attachments.length}</span>
+                </div>
+                {attachments.length ? (
+                  <div className="case-photo-grid case-attachment-grid">
+                    {attachments.map((file) => {
+                      const url = `data:${file.type};base64,${file.base64}`;
+                      return file.type?.startsWith("image/") ? (
+                        <figure key={file.id}>
+                          <Image
+                            src={url}
+                            alt={file.name || "Admin attachment"}
+                            preview={{ mask: "Preview" }}
+                          />
+                          <figcaption>{file.name || "Image"}</figcaption>
+                        </figure>
+                      ) : (
+                        <a
+                          className="case-document-link"
+                          href={url}
+                          download={file.name || "attachment"}
+                          key={file.id}
+                          title={file.name}
+                        >
+                          <FileText size={24} />
+                          <span>{file.name || "Attachment"}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Empty
+                    className="compact-empty photo-preview-empty"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="No Admin Attachments"
+                  />
+                )}
+              </section>
+            </div>
           </div>
         </>
       )}
