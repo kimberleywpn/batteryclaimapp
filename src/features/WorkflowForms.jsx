@@ -304,6 +304,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
   const [busy, setBusy] = useState(false);
   const [attachmentLoading, setAttachmentLoading] = useState(true);
   const [attachments, setAttachments] = useState([]);
+  const [previewImage, setPreviewImage] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
@@ -408,6 +409,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
     name: file.name,
     status: "done",
     size: file.size || Math.ceil(file.base64.length * 0.75),
+    type: file.type,
     url: `data:${file.type};base64,${file.base64}`,
   }));
   return (
@@ -552,6 +554,14 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             className="claim-photo-upload"
             listType="picture-card"
             fileList={attachmentFileList}
+            onPreview={(file) => {
+              const url = file.url || file.thumbUrl || "";
+              if (file.type?.startsWith("image/")) {
+                setPreviewImage(url);
+                return;
+              }
+              window.open(url, "_blank", "noopener,noreferrer");
+            }}
             beforeUpload={(file, files) => {
               if (file.uid === files[0]?.uid) addAttachments(files);
               return AntUpload.LIST_IGNORE;
@@ -604,6 +614,16 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           )}
         </div>
       </Form>
+      {previewImage && (
+        <Image
+          styles={{ root: { display: "none" } }}
+          preview={{
+            open: true,
+            onOpenChange: (open) => !open && setPreviewImage(""),
+          }}
+          src={previewImage}
+        />
+      )}
     </Modal>
   );
 }
