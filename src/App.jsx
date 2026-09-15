@@ -10,11 +10,13 @@ import {
   Modal,
   Segmented,
   Select,
+  Space,
   Spin,
   Statistic,
   Tabs,
   Timeline,
   Tooltip,
+  Typography,
 } from "antd";
 import {
   BarChart3,
@@ -224,24 +226,23 @@ function CaseHistory({ claimId }) {
         </div>
       ) : entries.length ? (
         <Timeline
-          className="case-history-timeline"
           items={entries.map((entry, index) => ({
             key: `${entry.at}-${index}`,
             children: (
-              <div className="history-entry">
-                <span>
+              <Space direction="vertical" size={0}>
+                <Typography.Text strong>
                   {historyLabels[entry.action] ||
                     String(entry.action || "Case Updated")
                       .replace(/-/g, " ")
                       .replace(/\b\w/g, (letter) => letter.toUpperCase())}
-                </span>
-                <small>
+                </Typography.Text>
+                <Typography.Text type="secondary">
                   {entry.actor || "System"} ·{" "}
                   {entry.at
                     ? dayjs(entry.at).format("DD-MM-YYYY, h:mm:ss A")
                     : "Time Not Recorded"}
-                </small>
-              </div>
+                </Typography.Text>
+              </Space>
             ),
           }))}
         />

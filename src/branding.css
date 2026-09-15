@@ -180,51 +180,6 @@
 }
 
 
-.case-history-timeline {
-  margin: 10px 0 0;
-  padding: 2px 4px 0;
-}
-
-.case-history-timeline .ant-timeline-item {
-  padding-bottom: 15px;
-}
-
-.case-history-timeline .ant-timeline-item:last-child {
-  padding-bottom: 0;
-}
-
-.case-history-timeline .ant-timeline-item-head {
-  border-color: var(--blue);
-  background: #fff;
-}
-
-.case-history-timeline .ant-timeline-item-tail {
-  border-inline-start-color: var(--line);
-}
-
-.history-entry {
-  display: grid;
-  gap: 3px;
-  min-height: 32px;
-}
-
-.history-entry span {
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.history-entry small {
-  color: var(--muted);
-  font-size: 0.68rem;
-  line-height: 1.35;
-}
-
-@media (max-width: 560px) {
-  .history-entry {
-    gap: 2px;
-  }
-}
-
 .progress-subfilters-react .ant-segmented {
   max-width: 100%;
 }
