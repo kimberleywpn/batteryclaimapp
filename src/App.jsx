@@ -937,26 +937,26 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
               { value: "asc", label: "Report Date: Oldest" },
             ]}
           />
-          {view === "reported" && canManage && (
-            <div className="bulk-receive-bar">
-              <Checkbox
-                checked={allVisibleSelected}
-                indeterminate={!allVisibleSelected && selectableVisible.some((claim) => selectedIds.includes(claim.id))}
-                disabled={!selectableVisible.length}
-                onChange={(event) => {
-                  const ids = selectableVisible.map((claim) => claim.id);
-                  setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...ids])] : current.filter((id) => !ids.includes(id)));
-                }}
-              >
-                Select This Page
-              </Checkbox>
-              <span>{selectedIds.length.toLocaleString()} selected</span>
-              <AppButton className="primary" disabled={!selectedIds.length} onClick={() => { setBulkResult(null); setBulkOpen(true); }}>
-                Mark As Received
-              </AppButton>
-            </div>
-          )}
         </div>
+        {view === "reported" && canManage && (
+          <div className="bulk-receive-bar">
+            <Checkbox
+              checked={allVisibleSelected}
+              indeterminate={!allVisibleSelected && selectableVisible.some((claim) => selectedIds.includes(claim.id))}
+              disabled={!selectableVisible.length}
+              onChange={(event) => {
+                const ids = selectableVisible.map((claim) => claim.id);
+                setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...ids])] : current.filter((id) => !ids.includes(id)));
+              }}
+            >
+              Select This Page
+            </Checkbox>
+            <span>{selectedIds.length.toLocaleString()} selected</span>
+            <AppButton className="primary" disabled={!selectedIds.length} onClick={() => { setBulkResult(null); setBulkOpen(true); }}>
+              Mark As Received
+            </AppButton>
+          </div>
+        )}
         <div className="claim-list">
           {visible.map((c) => (
             <article className="claim-card" key={c.id}>
