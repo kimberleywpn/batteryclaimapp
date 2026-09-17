@@ -25,7 +25,7 @@ const emptyIntake = {
 export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
   const initialValues = claim
     ? Object.fromEntries(
-        Object.keys(emptyIntake).map((key) => [key, claim[key] || ""]),
+        Object.keys(emptyIntake).map((key) => [key, claim[key] ?? ""]),
       )
     : emptyIntake;
   const [formApi] = Form.useForm();
@@ -33,6 +33,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const lookupRequest = useRef(null);
+  const monthsManuallyEdited = useRef(Boolean(claim?.batteryUsedMonths));
   const enteredSerial = Form.useWatch("serial", formApi);
   const duplicateClaims = useMemo(() => {
     const serial = String(enteredSerial || "").trim().toUpperCase();
@@ -68,11 +69,13 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
           "No Matching Record. Enter The Details Manually.",
         );
       const current = formApi.getFieldsValue(true);
+      monthsManuallyEdited.current = false;
       const invoiceDate = String(row.invoiceDate || current.invoiceDate).slice(
         0,
         10,
       );
       formApi.setFieldsValue({
+        crfNo: row.crfNo || current.crfNo,
         customer: row.customerName || current.customer,
         dealerName: row.dealerName || current.dealerName,
         branchName: row.branchName || current.branchName,
@@ -89,7 +92,9 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
         ),
         itemDescription: row.itemDescription || current.itemDescription,
       });
-      setLookupState("Invoice Details Found. All Fields Remain Editable.");
+      setLookupState(row.invoiceNo
+        ? "Invoice Details Found. All Fields Remain Editable."
+        : "CRF Details Found. All Fields Remain Editable.");
     } catch (err) {
       if (err.name === "AbortError") return;
       setLookupState("");
@@ -160,12 +165,13 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
         onFinish={submit}
         onKeyDown={advanceFieldOnEnter}
         onValuesChange={(changed, values) => {
+          if ("batteryUsedMonths" in changed) monthsManuallyEdited.current = true;
           if ("serial" in changed && lookupRequest.current) {
             lookupRequest.current.abort();
             lookupRequest.current = null;
             setLookupState("");
           }
-          if ("invoiceDate" in changed || "claimDate" in changed) {
+          if (!monthsManuallyEdited.current && ("invoiceDate" in changed || "claimDate" in changed)) {
             formApi.setFieldValue(
               "batteryUsedMonths",
               completedMonthsBetween(values.invoiceDate, values.claimDate),
@@ -214,7 +220,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             <Alert
               className="app-alert lookup-state wide"
               type={
-                lookupState.startsWith("Invoice Details Found")
+                lookupState.startsWith("Invoice Details Found") || lookupState.startsWith("CRF Details Found")
                   ? "success"
                   : lookupState.startsWith("No Matching Record")
                     ? "warning"
@@ -247,7 +253,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
           {field("Battery Used Months", "batteryUsedMonths", {
             type: "number",
             min: 0,
-            readOnly: true,
+            precision: 0,
           })}
           {field("Battery Model", "model", { required: true })}
           {field("Brand", "itemGroup")}
