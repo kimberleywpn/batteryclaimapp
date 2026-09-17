@@ -94,7 +94,7 @@ function reportRecord(claim) {
     claimId: claim.id,
     id: claim.caseNumber || claim.id,
     brand: brandName(claim.itemGroup),
-    dealer: claim.dealerName || claim.customer || "",
+    dealer: claim.customer || claim.dealerName || "",
     status: stageLabel(claim.status),
     receivedDate: warehouse.receivedDate || warehouse.inspectionDate || "",
     batchCode: warehouse.batchCode || "",
