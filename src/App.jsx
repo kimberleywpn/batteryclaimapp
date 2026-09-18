@@ -182,13 +182,16 @@ function stageDetail(claim, view) {
   );
 }
 
+const previewShown = (value) =>
+  value == null || String(value).trim() === "" ? "-" : formatDisplayDate(value);
+
 function DetailFields({ fields }) {
   return (
     <div className="detail-grid">
       {fields.map(([label, value]) => (
         <div className="detail-field" key={label}>
           <span>{label}</span>
-          <strong>{shown(value)}</strong>
+          <strong>{previewShown(value)}</strong>
         </div>
       ))}
     </div>
@@ -425,11 +428,11 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
             <h2>
               <span>{claim.serial}</span>
               <i aria-hidden="true" />
-              <span>{shown(claim.model)}</span>
+              <span>{previewShown(claim.model)}</span>
             </h2>
             <p>
-              {shown(claim.customer || claim.dealerName)} | {shown(claim.area)}{" "}
-              | {shown(claim.salesperson)}
+              {previewShown(claim.customer || claim.dealerName)} | {previewShown(claim.area)}{" "}
+              | {previewShown(claim.salesperson)}
             </p>
           </div>
           <div className="preview-actions">
