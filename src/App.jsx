@@ -431,7 +431,7 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               <span>{previewShown(claim.model)}</span>
             </h2>
             <p>
-              {previewShown(claim.customer || claim.dealerName)} | {previewShown(claim.area)}{" "}
+              {previewShown(claim.customer || claim.dealerName)} | {previewShown(claim.branchName)} | {previewShown(claim.area)}{" "}
               | {previewShown(claim.salesperson)}
             </p>
           </div>
@@ -470,6 +470,7 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               ["Report Date", claim.claimDate],
               ["CRF No.", claim.crfNo],
               ["Customer Name", claim.customer || claim.dealerName],
+              ["Branch Code", claim.branchName],
               ["Area", claim.area],
               ["Sales Agent", claim.salesperson],
               ["Invoice No.", claim.invoiceNo],
@@ -478,7 +479,6 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               ["Battery Model", claim.model],
               ["Brand", claim.itemGroup],
               ["Item Description", claim.itemDescription],
-              ["Branch Code", claim.branchName],
               ["Case No.", claim.caseNumber || claim.id],
             ]}
           />
