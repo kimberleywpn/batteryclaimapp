@@ -39,6 +39,7 @@ import {
 import dayjs from "dayjs";
 import { api, setAuthToken } from "./api";
 import { AppButton, AppPagination, SearchInput } from "./components/AppControls";
+import StatusTabs from "./components/StatusTabs";
 import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features/WorkflowForms";
 import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } from "./utils/claimFormatting";
 
@@ -466,9 +467,6 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
           <h3>Claim Information</h3>
           <DetailFields
             fields={[
-              ["Battery Serial Number", claim.serial],
-              ["Report Date", claim.claimDate],
-              ["CRF No.", claim.crfNo],
               ["Customer Name", claim.customer || claim.dealerName],
               ["Branch Code", claim.branchName],
               ["Area", claim.area],
@@ -479,7 +477,6 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               ["Battery Model", claim.model],
               ["Brand", claim.itemGroup],
               ["Item Description", claim.itemDescription],
-              ["Case No.", claim.caseNumber || claim.id],
             ]}
           />
         </div>
@@ -491,8 +488,6 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
                 "Date Received",
                 warehouse.receivedDate || warehouse.inspectionDate,
               ],
-              ["Battery Model", claim.model],
-              ["Serial Number", claim.serial],
               ["Battery Batch / Code", warehouse.batchCode],
               ["Production Date", warehouse.productDate],
               ["Factory", warehouse.factory],
@@ -621,35 +616,14 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
       </section>
       <section className="surface workspace sales-workspace">
         <div className="list-toolbar">
-          <div className="mobile-progress-tabs" role="group" aria-label="Sales Approval Status">
-            {salesViews.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={view === item.id}
-                onClick={() => setView(item.id)}
-              >
-                <span className="status-tab-label">
-                  <span className="status-tab-name">{item.label}</span>
-                  <span className="status-tab-count">{categories[item.id].length.toLocaleString()}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-          <Tabs
-            className="status-tabs sales-status-tabs"
+          <StatusTabs
+            label="Sales Approval Status"
+            className="sales-status-tabs"
             activeKey={view}
             onChange={setView}
             items={salesViews.map((item) => ({
-              key: item.id,
-              label: (
-                <span className="status-tab-label">
-                  <span className="status-tab-name">{item.label}</span>
-                  <span className="status-tab-count">
-                    {categories[item.id].length.toLocaleString()}
-                  </span>
-                </span>
-              ),
+              ...item,
+              count: categories[item.id].length,
             }))}
           />
           <SearchInput
@@ -973,35 +947,13 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
       </section>
       <section className="surface workspace">
         <div className="list-toolbar">
-          <div className="mobile-progress-tabs" role="group" aria-label="Claim Progress">
-            {claimViews.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={view === item.id}
-                onClick={() => setView(item.id)}
-              >
-                <span className="status-tab-label">
-                  <span className="status-tab-name">{item.label}</span>
-                  <span className="status-tab-count">{counts[item.id].toLocaleString()}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-          <Tabs
-            className="status-tabs"
+          <StatusTabs
+            label="Claim Progress"
             activeKey={view}
             onChange={setView}
             items={claimViews.map((item) => ({
-              key: item.id,
-              label: (
-                <span className="status-tab-label">
-                  <span className="status-tab-name">{item.label}</span>
-                  <span className="status-tab-count">
-                    {counts[item.id].toLocaleString()}
-                  </span>
-                </span>
-              ),
+              ...item,
+              count: counts[item.id],
             }))}
           />
           <div className="workspace-list-actions">
