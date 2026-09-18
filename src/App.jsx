@@ -958,6 +958,21 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
       </section>
       <section className="surface workspace">
         <div className="list-toolbar">
+          <div className="mobile-progress-tabs" role="group" aria-label="Claim Progress">
+            {claimViews.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={view === item.id}
+                onClick={() => setView(item.id)}
+              >
+                <span className="status-tab-label">
+                  <span className="status-tab-name">{item.label}</span>
+                  <span className="status-tab-count">{counts[item.id].toLocaleString()}</span>
+                </span>
+              </button>
+            ))}
+          </div>
           <Tabs
             className="status-tabs"
             activeKey={view}

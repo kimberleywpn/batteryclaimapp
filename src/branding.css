@@ -264,6 +264,10 @@
   overflow: hidden;
 }
 
+.mobile-progress-tabs {
+  display: none;
+}
+
 .workspace .list-toolbar {
   flex-wrap: nowrap;
 }
@@ -1018,6 +1022,36 @@
   .workspace .status-tabs {
     width: 100%;
     min-width: 0;
+  }
+
+  .workspace .mobile-progress-tabs + .status-tabs {
+    display: none;
+  }
+
+  .mobile-progress-tabs {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .mobile-progress-tabs > button {
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding: 8px 14px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .mobile-progress-tabs > button[aria-pressed="true"] {
+    border-bottom-color: var(--blue);
+    color: var(--blue-dark);
   }
 
   .workspace .sales-status-tabs {
