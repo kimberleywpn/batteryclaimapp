@@ -621,6 +621,21 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
       </section>
       <section className="surface workspace sales-workspace">
         <div className="list-toolbar">
+          <div className="mobile-progress-tabs" role="group" aria-label="Sales Approval Status">
+            {salesViews.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={view === item.id}
+                onClick={() => setView(item.id)}
+              >
+                <span className="status-tab-label">
+                  <span className="status-tab-name">{item.label}</span>
+                  <span className="status-tab-count">{categories[item.id].length.toLocaleString()}</span>
+                </span>
+              </button>
+            ))}
+          </div>
           <Tabs
             className="status-tabs sales-status-tabs"
             activeKey={view}
