@@ -92,11 +92,9 @@ function SignIn({ onSuccess }) {
           <img className="brand-logo" src={brandLogo} alt="Kai Shen" />
           <div>
             <strong>Battery Claim App</strong>
-            <span>Operations workspace</span>
           </div>
         </div>
         <h1>Sign In</h1>
-        <p>Use your existing Battery Claim App account.</p>
         <Form.Item
           label="Username"
           name="username"
