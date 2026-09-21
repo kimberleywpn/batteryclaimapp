@@ -478,7 +478,12 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
             <DetailFields fields={[
               ["Reason", claim.cancellation?.reason],
               ["Cancelled By", claim.cancellation?.cancelledBy],
-              ["Cancelled Date", claim.cancellation?.cancelledAt],
+              [
+                "Cancelled Date",
+                claim.cancellation?.cancelledAt
+                  ? dayjs(claim.cancellation.cancelledAt).format("DD-MM-YYYY, h:mm:ss A")
+                  : "",
+              ],
             ]} />
           </div>
         )}
