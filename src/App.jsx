@@ -992,7 +992,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
               onChange={setSubfilter}
               options={subfilters.map((item) => ({
                 value: item.id,
-                label: `${item.label} ${baseFiltered.filter(item.test).length.toLocaleString()}`,
+                label: item.label,
               }))}
             />
           )}
