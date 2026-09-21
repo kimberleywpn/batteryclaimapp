@@ -470,6 +470,7 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
               ["Customer Name", claim.customer || claim.dealerName],
               ["Branch Code", claim.branchName],
               ["Area", claim.area],
+              ["CRF No.", claim.crfNo],
               ["Sales Agent", claim.salesperson],
               ["Invoice No.", claim.invoiceNo],
               ["Invoice Date", claim.invoiceDate],
