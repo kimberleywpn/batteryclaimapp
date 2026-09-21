@@ -31,6 +31,7 @@ export const stageLabel = (status) =>
     settlement: "Claim Processing",
     sales: "Sales Approval",
     complete: "Completed",
+    cancelled: "Cancelled",
   })[status] || status || "Not Recorded";
 
 export function completedMonthsBetween(invoiceDate, reportDate) {

@@ -20,6 +20,7 @@ import {
 } from "antd";
 import {
   BarChart3,
+  Ban,
   BatteryCharging,
   Check,
   FileText,
@@ -135,6 +136,7 @@ const claimViews = [
   { id: "admin", label: "Claim Processing", statuses: ["admin", "settlement"] },
   { id: "sales", label: "Sales Approval", statuses: ["sales"] },
   { id: "complete", label: "Completed", statuses: ["complete"] },
+  { id: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
 ];
 function daysSinceReport(value) {
   if (!value) return null;
@@ -169,6 +171,8 @@ function stageDetail(claim, view) {
           .toLowerCase()
           .replace(/\b\w/g, (letter) => letter.toUpperCase())
       : "Result Not Recorded";
+  if (claim.status === "cancelled")
+    return claim.cancellation?.reason || "Claim Cancelled";
   return (
     {
       reported: "Arrange Battery Collection",
@@ -204,6 +208,7 @@ const historyLabels = {
   admin: "Claim Processing Updated",
   approval: "Sales Decision Submitted",
   imported: "Historical Claim Imported",
+  cancelled: "Claim Cancelled",
   deleted: "Case Deleted",
 };
 function CaseHistory({ claimId }) {
@@ -384,7 +389,7 @@ function CasePhotos({ claimId }) {
     </Image.PreviewGroup>
   );
 }
-function CasePreview({ claim, onClose, onEdit, onDelete }) {
+function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
   const warehouse = claim.warehouse || {};
   const admin = claim.admin || {};
   const approval = claim.approval || {};
@@ -440,6 +445,12 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
                 Edit Claim Information
               </AppButton>
             )}
+            {onCancelClaim && (
+              <AppButton className="secondary danger-action" onClick={onCancelClaim}>
+                <Ban size={17} />
+                Cancel Claim
+              </AppButton>
+            )}
             {onDelete && (
               <AppButton
                 className="secondary icon-action danger-action"
@@ -461,6 +472,16 @@ function CasePreview({ claim, onClose, onEdit, onDelete }) {
           </div>
         </div>
         <span className="detail-status">{stageLabel(claim.status)}</span>
+        {claim.status === "cancelled" && (
+          <div className="preview-section cancellation-section">
+            <h3>Cancellation</h3>
+            <DetailFields fields={[
+              ["Reason", claim.cancellation?.reason],
+              ["Cancelled By", claim.cancellation?.cancelledBy],
+              ["Cancelled Date", claim.cancellation?.cancelledAt],
+            ]} />
+          </div>
+        )}
         <div className="preview-section claim-information-section">
           <h3>Claim Information</h3>
           <DetailFields
@@ -766,6 +787,58 @@ function DeleteClaimDialog({ claim, onCancel, onDeleted }) {
   );
 }
 
+function CancelClaimDialog({ claim, onClose, onCancelled }) {
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function cancelClaim() {
+    const value = reason.trim();
+    if (!value) {
+      setError("Enter a cancellation reason.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const result = await api(`/api/claims/${encodeURIComponent(claim.id)}/cancel`, {
+        method: "POST",
+        body: JSON.stringify({ version: claim.version, reason: value }),
+      });
+      onCancelled(result.claim);
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  }
+  return (
+    <Modal
+      open
+      title="Cancel Claim?"
+      okText="Cancel Claim"
+      cancelText="Keep Claim"
+      okButtonProps={{ danger: true, loading: busy }}
+      cancelButtonProps={{ disabled: busy }}
+      closable={!busy}
+      mask={{ closable: !busy }}
+      onOk={cancelClaim}
+      onCancel={onClose}
+    >
+      <p><strong>{claim.serial}</strong>{claim.model ? ` | ${claim.model}` : ""}</p>
+      <p>The case will remain searchable and viewable, but no further workflow actions will be allowed.</p>
+      <Input.TextArea
+        value={reason}
+        onChange={(event) => setReason(event.target.value)}
+        placeholder="Cancellation reason"
+        rows={4}
+        maxLength={2000}
+        disabled={busy}
+        autoFocus
+      />
+      {error && <Alert className="app-alert" type="error" showIcon message={error} />}
+    </Modal>
+  );
+}
+
 function progressFilters(view) {
   if (view === "arrived")
     return [
@@ -819,6 +892,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
   const [adminClaim, setAdminClaim] = useState(null);
   const [warehouseClaim, setWarehouseClaim] = useState(null);
   const [deleteClaim, setDeleteClaim] = useState(null);
+  const [cancelClaim, setCancelClaim] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [receiveDate, setReceiveDate] = useState(dayjs());
@@ -931,7 +1005,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
       <section className="metrics">
         {metric(
           <PackageOpen size={20} />,
-          claims.length - counts.complete,
+          claims.filter((claim) => !["complete", "cancelled"].includes(claim.status)).length,
           "Active Claims",
           "amber",
         )}
@@ -1071,7 +1145,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                   <div className="stage-next">{stageDetail(c, view)}</div>
                 </div>
               </div>
-              {canManage && (
+              {canManage && c.status !== "cancelled" && (
                 <div className="row-actions">
                   <AppButton
                     className="secondary"
@@ -1109,13 +1183,14 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
           claim={selectedClaim}
           onClose={() => setSelectedClaim(null)}
           onEdit={
-            canManage
+            canManage && selectedClaim.status !== "cancelled"
               ? () => {
                   setClaimForm(selectedClaim);
                   setSelectedClaim(null);
                 }
               : null
           }
+          onCancelClaim={canManage && selectedClaim.status !== "cancelled" ? () => setCancelClaim(selectedClaim) : null}
           onDelete={canManage ? () => setDeleteClaim(selectedClaim) : null}
         />
       )}
@@ -1152,6 +1227,18 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
             setDeleteClaim(null);
             setSelectedClaim(null);
             onClaimDeleted(id);
+          }}
+        />
+      )}
+      {cancelClaim && (
+        <CancelClaimDialog
+          claim={cancelClaim}
+          onClose={() => setCancelClaim(null)}
+          onCancelled={(claim) => {
+            setCancelClaim(null);
+            setSelectedClaim(null);
+            onClaimSaved(claim);
+            setView("cancelled");
           }}
         />
       )}

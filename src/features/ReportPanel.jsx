@@ -20,6 +20,7 @@ const reportDateKeys = new Set([
   "batteryInstalledDate",
   "vehicleRegistrationDate",
   "decisionDate",
+  "cancelledDate",
 ]);
 
 const reportColumns = [
@@ -38,6 +39,9 @@ const reportColumns = [
   ["Area", "area"],
   ["Salesperson", "salesperson"],
   ["Claim Status", "status"],
+  ["Cancellation Reason", "cancellationReason"],
+  ["Cancelled By", "cancelledBy"],
+  ["Cancelled Date", "cancelledDate"],
   ["Date Received", "receivedDate"],
   ["Battery Batch / Code", "batchCode"],
   ["Production Date", "productDate"],
@@ -96,6 +100,9 @@ function reportRecord(claim) {
     brand: brandName(claim.itemGroup),
     dealer: claim.customer || claim.dealerName || "",
     status: stageLabel(claim.status),
+    cancellationReason: claim.cancellation?.reason || "",
+    cancelledBy: claim.cancellation?.cancelledBy || "",
+    cancelledDate: claim.cancellation?.cancelledAt?.slice(0, 10) || "",
     receivedDate: warehouse.receivedDate || warehouse.inspectionDate || "",
     batchCode: warehouse.batchCode || "",
     productDate: warehouse.productDate || "",

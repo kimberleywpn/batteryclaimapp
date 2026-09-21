@@ -21,6 +21,7 @@ test("formats display values consistently", () => {
   assert.equal(brandName("BB01"), "AtlasBX");
   assert.equal(brandName("BC01"), "MF Power");
   assert.equal(stageLabel("settlement"), "Claim Processing");
+  assert.equal(stageLabel("cancelled"), "Cancelled");
 });
 
 test("calculates completed battery-use months", () => {
