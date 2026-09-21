@@ -16,7 +16,8 @@
   line-height: 1.2;
 }
 
-.preview-head h2 i {
+.preview-head h2 i,
+.panel-heading h2 i {
   width: 6px;
   height: 6px;
   flex: 0 0 6px;
