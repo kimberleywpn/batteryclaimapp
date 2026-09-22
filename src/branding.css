@@ -438,7 +438,8 @@
 .serial-search .ant-input-wrapper,
 .serial-search .ant-input-affix-wrapper,
 .serial-search .ant-input-group-addon,
-.serial-search .ant-input-search-button {
+.serial-search .ant-input-search-button,
+.claim-intake-form .ant-select {
   height: 41px !important;
 }
 
