@@ -107,6 +107,40 @@
   font-size: 0.72rem;
 }
 
+.claim-intake-form .customer-lookup-select,
+.claim-intake-form .customer-lookup-select .ant-select-selector {
+  height: 41px !important;
+  min-height: 41px !important;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-selector {
+  padding-block: 0 !important;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-selection-wrap,
+.claim-intake-form .customer-lookup-select .ant-select-selection-item,
+.claim-intake-form .customer-lookup-select .ant-select-selection-placeholder,
+.claim-intake-form .customer-lookup-select .ant-select-selection-search {
+  height: 39px !important;
+  min-height: 39px !important;
+  align-items: center;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-selection-search {
+  inset-block: 0 !important;
+  display: flex;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-selection-item,
+.claim-intake-form .customer-lookup-select .ant-select-selection-placeholder {
+  line-height: 39px !important;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-selection-search-input {
+  height: 39px !important;
+  padding-block: 0 !important;
+}
+
 .admin-dialog .ant-form-item,
 .warehouse-dialog .ant-form-item,
 .approval-dialog .ant-form-item {
