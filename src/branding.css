@@ -860,6 +860,37 @@
   gap: 10px 12px;
 }
 
+.mileage-field-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.mileage-field-stack .ant-form-item {
+  margin-bottom: 0;
+}
+
+.admin-dialog .calculated-mileage-field .ant-input-affix-wrapper {
+  min-height: 34px;
+  background: #f4f7f8;
+  border-color: #d8e1e4;
+  border-radius: 5px;
+}
+
+.admin-dialog .calculated-mileage-field input {
+  height: 30px;
+  color: #64737a;
+  background: transparent;
+  border: 0;
+  padding: 5px 7px;
+  font-size: 0.8rem;
+}
+
+.calculated-mileage-field .ant-input-suffix {
+  color: #64737a;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 .admin-dialog .additional-details .ant-collapse-header {
   min-height: 42px;
   padding-block: 10px;

@@ -528,10 +528,46 @@ export function AdminProcess({ claim, onClose, onSaved }) {
                     type: "number",
                     min: 0,
                   })}
-                  {input("Current Mileage", "mileage2", {
-                    type: "number",
-                    min: 0,
-                  })}
+                  <div className="mileage-field-stack">
+                    {input("Current Mileage", "mileage2", {
+                      type: "number",
+                      min: 0,
+                    })}
+                    <Form.Item
+                      noStyle
+                      shouldUpdate={(previous, current) =>
+                        previous.mileage1 !== current.mileage1 ||
+                        previous.mileage2 !== current.mileage2
+                      }
+                    >
+                      {({ getFieldValue }) => {
+                        const previousMileage = getFieldValue("mileage1");
+                        const currentMileage = getFieldValue("mileage2");
+                        const hasBoth =
+                          previousMileage !== "" &&
+                          previousMileage !== undefined &&
+                          currentMileage !== "" &&
+                          currentMileage !== undefined;
+                        return (
+                          <Form.Item
+                            className="calculated-mileage-field"
+                            label="Calculated Mileage"
+                          >
+                            <Input
+                              value={
+                                hasBoth
+                                  ? Number(currentMileage) - Number(previousMileage)
+                                  : ""
+                              }
+                              readOnly
+                              tabIndex={-1}
+                              suffix="KM"
+                            />
+                          </Form.Item>
+                        );
+                      }}
+                    </Form.Item>
+                  </div>
                   {input("Direct Replaced S/N", "directReplacedSerialNo")}
                   <Form.Item
                     className="wide"
