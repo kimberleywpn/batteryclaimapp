@@ -131,18 +131,27 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
         );
         if (controller.signal.aborted) return;
         setCustomerOptions(
-          (result.records || []).map((row, index) => ({
-            key: `${row.debtorCode || ""}-${row.branchName || ""}-${index}`,
-            value: row.customerName || row.dealerName || "",
-            label: [
-              row.customerName || row.dealerName,
-              [row.branchName, row.branchDisplayName]
-                .filter(Boolean)
-                .join(" - "),
-              row.debtorCode,
-            ].filter(Boolean).join(" | "),
-            ...row,
-          })),
+          (result.records || []).map((row, index) => {
+            const customerName = row.customerName || row.dealerName || "";
+            const branchLabel = [row.branchName, row.branchDisplayName]
+              .filter(Boolean)
+              .join(" - ");
+            return {
+              key: `${row.debtorCode || ""}-${row.branchName || ""}-${index}`,
+              value: customerName,
+              label: (
+                <div className="customer-lookup-option">
+                  <strong>{customerName}</strong>
+                  {(branchLabel || row.debtorCode) && (
+                    <span>
+                      {[branchLabel, row.debtorCode].filter(Boolean).join(" | ")}
+                    </span>
+                  )}
+                </div>
+              ),
+              ...row,
+            };
+          }),
         );
       } catch (err) {
         if (err.name !== "AbortError") setError(err.message);
@@ -321,7 +330,9 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
               onSelect={selectCustomer}
               filterOption={false}
               allowClear
-              placeholder="Type To Search IV Customers"
+              autoComplete="off"
+              popupMatchSelectWidth={520}
+              placeholder="Type To Search Customers"
               notFoundContent={customerLookupLoading ? "Searching..." : null}
             />
           </Form.Item>

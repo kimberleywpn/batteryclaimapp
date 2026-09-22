@@ -1,5 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Rubik:wght@500;600;700&display=swap');
 
+.customer-lookup-option {
+  min-width: 0;
+  padding: 3px 2px;
+  display: grid;
+  gap: 2px;
+}
+
+.customer-lookup-option strong,
+.customer-lookup-option span {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.customer-lookup-option strong {
+  color: var(--ink);
+  font-size: .82rem;
+}
+
+.customer-lookup-option span {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.ant-select-dropdown:has(.customer-lookup-option) {
+  width: min(520px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px);
+}
+
 .bulk-receive-bar {
   min-height: 52px;
   padding: 8px 14px;
