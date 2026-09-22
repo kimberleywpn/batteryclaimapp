@@ -860,35 +860,30 @@
   gap: 10px 12px;
 }
 
-.mileage-field-stack {
+.mileage-fields {
+  grid-column: span 2;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
 }
 
-.mileage-field-stack .ant-form-item {
+.mileage-fields > .ant-form-item {
   margin-bottom: 0;
 }
 
-.admin-dialog .calculated-mileage-field .ant-input-affix-wrapper {
-  min-height: 34px;
-  background: #f4f7f8;
-  border-color: #d8e1e4;
-  border-radius: 5px;
+.used-mileage-summary {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: -7px;
+  color: #64737a;
+  font-size: 0.75rem;
 }
 
-.admin-dialog .calculated-mileage-field input {
-  height: 30px;
-  color: #64737a;
-  background: transparent;
-  border: 0;
-  padding: 5px 7px;
-  font-size: 0.8rem;
-}
-
-.calculated-mileage-field .ant-input-suffix {
-  color: #64737a;
-  font-size: 0.72rem;
-  font-weight: 600;
+.used-mileage-summary strong {
+  color: #1f3d47;
+  font-size: 0.78rem;
 }
 
 .admin-dialog .additional-details .ant-collapse-header {
@@ -912,6 +907,13 @@
   .admin-dialog .review-row > .primary {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .mileage-fields {
+    grid-column: auto;
+    grid-template-columns: 1fr;
   }
 }
 

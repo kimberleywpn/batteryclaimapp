@@ -524,11 +524,11 @@ export function AdminProcess({ claim, onClose, onSaved }) {
                   {input("Vehicle Reg. Date", "vehicleRegistrationDate", {
                     type: "date",
                   })}
-                  {input("Prev Installed Mileage", "mileage1", {
-                    type: "number",
-                    min: 0,
-                  })}
-                  <div className="mileage-field-stack">
+                  <div className="mileage-fields">
+                    {input("Prev Installed Mileage", "mileage1", {
+                      type: "number",
+                      min: 0,
+                    })}
                     {input("Current Mileage", "mileage2", {
                       type: "number",
                       min: 0,
@@ -549,21 +549,14 @@ export function AdminProcess({ claim, onClose, onSaved }) {
                           currentMileage !== "" &&
                           currentMileage !== undefined;
                         return (
-                          <Form.Item
-                            className="calculated-mileage-field"
-                            label="Calculated Mileage"
-                          >
-                            <Input
-                              value={
-                                hasBoth
-                                  ? Number(currentMileage) - Number(previousMileage)
-                                  : ""
-                              }
-                              readOnly
-                              tabIndex={-1}
-                              suffix="KM"
-                            />
-                          </Form.Item>
+                          <div className="used-mileage-summary">
+                            <span>Used Mileage:</span>
+                            <strong>
+                              {hasBoth
+                                ? `${Number(currentMileage) - Number(previousMileage)} KM`
+                                : "-"}
+                            </strong>
+                          </div>
                         );
                       }}
                     </Form.Item>
