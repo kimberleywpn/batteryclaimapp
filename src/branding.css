@@ -1179,6 +1179,6 @@
   white-space: nowrap;
 }
 
-.ant-select-content.ant-select-content-has-value {
+.review-row .ant-select-content.ant-select-content-has-value {
   overflow: unset !important;
 }
