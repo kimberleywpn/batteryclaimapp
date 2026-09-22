@@ -1177,3 +1177,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.ant-select {
+  height: 41px;
+}
