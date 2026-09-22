@@ -1178,3 +1178,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.ant-select-content.ant-select-content-has-value {
+  overflow: unset !important;
+}
