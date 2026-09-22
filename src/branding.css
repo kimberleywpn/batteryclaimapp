@@ -873,14 +873,13 @@
 }
 
 .used-mileage-summary {
-  grid-column: 1 / -1;
+  grid-column: 2;
   display: flex;
   align-items: baseline;
   gap: 5px;
-  margin-top: -7px;
+  margin-top: 5px;
   color: #64737a;
   font-size: 0.75rem;
-  padding-top: 4px;
 }
 
 .used-mileage-summary strong {
@@ -916,6 +915,10 @@
   .mileage-fields {
     grid-column: auto;
     grid-template-columns: 1fr;
+  }
+
+  .used-mileage-summary {
+    grid-column: 1;
   }
 }
 

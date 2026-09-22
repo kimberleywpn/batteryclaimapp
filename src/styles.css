@@ -28,6 +28,11 @@
   max-width: calc(100vw - 32px);
 }
 
+.customer-lookup-popup .ant-cascader-menu {
+  width: 260px;
+  max-width: 50vw;
+}
+
 .bulk-receive-bar {
   min-height: 52px;
   padding: 8px 14px;

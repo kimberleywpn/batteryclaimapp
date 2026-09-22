@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, AutoComplete, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
+import { Alert, Cascader, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
 import { Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
@@ -22,6 +22,33 @@ const emptyIntake = {
   itemDescription: "",
   batteryUsedMonths: "",
 };
+
+function customerCascaderOptions(records = []) {
+  const companies = new Map();
+  records.forEach((row, index) => {
+    const customerName = row.customerName || row.dealerName || "";
+    if (!customerName) return;
+    const companyKey = `customer:${row.debtorCode || customerName}`;
+    if (!companies.has(companyKey)) {
+      companies.set(companyKey, {
+        value: companyKey,
+        label: customerName,
+        children: [],
+      });
+    }
+    const branchLabel = [row.branchName, row.branchDisplayName]
+      .filter(Boolean)
+      .join(" - ") || "Main Account";
+    companies.get(companyKey).children.push({
+      value: `branch:${row.branchName || "main"}:${index}`,
+      label: branchLabel,
+      customerName,
+      ...row,
+    });
+  });
+  return [...companies.values()];
+}
+
 export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
   const initialValues = claim
     ? Object.fromEntries(
@@ -30,7 +57,10 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
     : emptyIntake;
   const [formApi] = Form.useForm();
   const [lookupState, setLookupState] = useState("");
-  const [customerOptions, setCustomerOptions] = useState([]);
+  const [customerOptions, setCustomerOptions] = useState(() => customerCascaderOptions(claim ? [claim] : []));
+  const [customerPath, setCustomerPath] = useState(() => claim?.customer
+    ? [`customer:${claim.debtorCode || claim.customer}`, `branch:${claim.branchName || "main"}:0`]
+    : []);
   const [customerLookupLoading, setCustomerLookupLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -100,6 +130,11 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
         ),
         itemDescription: row.itemDescription || current.itemDescription,
       });
+      const lookupOptions = customerCascaderOptions([row]);
+      setCustomerOptions(lookupOptions);
+      setCustomerPath(lookupOptions[0]
+        ? [lookupOptions[0].value, lookupOptions[0].children[0].value]
+        : []);
       setLookupState(row.invoiceNo
         ? "Invoice Details Found. All Fields Remain Editable."
         : "CRF Details Found. All Fields Remain Editable.");
@@ -116,7 +151,6 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
     customerLookupRequest.current?.abort();
     const search = String(value || "").trim();
     if (search.length < 2) {
-      setCustomerOptions([]);
       setCustomerLookupLoading(false);
       return;
     }
@@ -130,29 +164,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
           { signal: controller.signal },
         );
         if (controller.signal.aborted) return;
-        setCustomerOptions(
-          (result.records || []).map((row, index) => {
-            const customerName = row.customerName || row.dealerName || "";
-            const branchLabel = [row.branchName, row.branchDisplayName]
-              .filter(Boolean)
-              .join(" - ");
-            return {
-              key: `${row.debtorCode || ""}-${row.branchName || ""}-${index}`,
-              value: customerName,
-              label: (
-                <div className="customer-lookup-option">
-                  <strong>{customerName}</strong>
-                  {(branchLabel || row.debtorCode) && (
-                    <span>
-                      {[branchLabel, row.debtorCode].filter(Boolean).join(" | ")}
-                    </span>
-                  )}
-                </div>
-              ),
-              ...row,
-            };
-          }),
-        );
+        setCustomerOptions(customerCascaderOptions(result.records || []));
       } catch (err) {
         if (err.name !== "AbortError") setError(err.message);
       } finally {
@@ -163,7 +175,20 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
       }
     }, 300);
   }
-  function selectCustomer(_value, option) {
+  function selectCustomer(path, selectedOptions) {
+    const option = selectedOptions.at(-1);
+    setCustomerPath(path || []);
+    if (!option) {
+      formApi.setFieldsValue({
+        customer: "",
+        dealerName: "",
+        branchName: "",
+        debtorCode: "",
+        area: "",
+        salesperson: "",
+      });
+      return;
+    }
     formApi.setFieldsValue({
       customer: option.customerName || option.dealerName || "",
       dealerName: option.dealerName || "",
@@ -172,7 +197,6 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
       area: option.area || "",
       salesperson: option.salesAgent || "",
     });
-    setCustomerOptions([]);
   }
   async function submit() {
     setBusy(true);
@@ -316,24 +340,35 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
                 .join("\n")}
             />
           )}
-          <Form.Item
-            label="Customer Name"
-            name="customer"
-            required
-            normalize={(value) => String(value || "").toUpperCase()}
-            rules={[{ required: true, message: "Enter Customer Name." }]}
-          >
-            <AutoComplete
+          <Form.Item label="Customer Name" required>
+            <Form.Item
+              name="customer"
+              noStyle
+              normalize={(value) => String(value || "").toUpperCase()}
+              rules={[{ required: true, message: "Select Customer Name." }]}
+            >
+              <Input type="hidden" />
+            </Form.Item>
+            <Cascader
               className="app-filter-cascader customer-lookup-select"
               options={customerOptions}
+              value={customerPath}
+              onChange={selectCustomer}
               onSearch={searchCustomers}
-              onSelect={selectCustomer}
-              filterOption={false}
+              expandTrigger="hover"
+              popupClassName="customer-lookup-popup"
+              showSearch={{
+                filter: (inputValue, path) => {
+                  const haystack = path.map((option) => option.label).join(" ").toLowerCase();
+                  return inputValue.toLowerCase().split(/\s+/).filter(Boolean)
+                    .every((term) => haystack.includes(term));
+                },
+              }}
               allowClear
-              autoComplete="off"
               popupMatchSelectWidth={520}
-              placeholder="Type To Search Customers"
               notFoundContent={customerLookupLoading ? "Searching..." : null}
+              placeholder="Type To Search Customers"
+              displayRender={(labels) => labels[0] || ""}
             />
           </Form.Item>
           {field("Branch Code", "branchName")}
