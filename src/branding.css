@@ -141,6 +141,22 @@
   padding-block: 0 !important;
 }
 
+/* Ant Design 6 uses content/input instead of the older selection-* elements. */
+.claim-intake-form .customer-lookup-select {
+  align-items: center !important;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-content {
+  align-items: center;
+  overflow: hidden;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-input {
+  height: 22px !important;
+  line-height: 22px !important;
+  padding-block: 0 !important;
+}
+
 .admin-dialog .ant-form-item,
 .warehouse-dialog .ant-form-item,
 .approval-dialog .ant-form-item {
