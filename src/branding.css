@@ -107,34 +107,6 @@
   font-size: 0.72rem;
 }
 
-.claim-intake-form .ant-select {
-  width: 100%;
-}
-
-.claim-intake-form .customer-lookup-select .ant-select-selector {
-  height: 41px !important;
-  min-height: 41px !important;
-  padding: 0 10px !important;
-  align-items: center !important;
-}
-
-.claim-intake-form .customer-lookup-select .ant-select-selection-search-input {
-  height: 41px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  outline: 0 !important;
-}
-
-.claim-intake-form .customer-lookup-select .ant-select-selection-wrap {
-  height: 39px;
-  align-self: center;
-}
-
-.claim-intake-form .customer-lookup-select .ant-select-selection-placeholder,
-.claim-intake-form .customer-lookup-select .ant-select-selection-item {
-  line-height: 39px !important;
-}
-
 .admin-dialog .ant-form-item,
 .warehouse-dialog .ant-form-item,
 .approval-dialog .ant-form-item {
@@ -907,6 +879,7 @@
   margin-top: -7px;
   color: #64737a;
   font-size: 0.75rem;
+  padding-top: 4px;
 }
 
 .used-mileage-summary strong {
