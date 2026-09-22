@@ -313,6 +313,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             rules={[{ required: true, message: "Enter Customer Name." }]}
           >
             <AutoComplete
+              className="app-filter-cascader customer-lookup-select"
               options={customerOptions}
               onSearch={searchCustomers}
               onSelect={selectCustomer}

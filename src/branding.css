@@ -111,6 +111,17 @@
   width: 100%;
 }
 
+.claim-intake-form .customer-lookup-select .ant-select-selector {
+  min-height: 41px !important;
+}
+
+.claim-intake-form .customer-lookup-select .ant-select-selection-search-input {
+  height: 39px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+}
+
 .admin-dialog .ant-form-item,
 .warehouse-dialog .ant-form-item,
 .approval-dialog .ant-form-item {
