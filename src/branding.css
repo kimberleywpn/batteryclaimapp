@@ -746,6 +746,14 @@
   border-bottom: 1px solid #e7edef;
 }
 
+.case-preview .warehouse-preview-section .detail-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.case-preview .warehouse-preview-section .detail-field-break {
+  grid-column: 1;
+}
+
 .case-preview .detail-field span {
   line-height: 1.2;
 }
@@ -758,6 +766,10 @@
   .case-preview .detail-grid {
     grid-template-columns: 1fr 1fr;
     column-gap: 12px;
+  }
+
+  .case-preview .warehouse-preview-section .detail-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

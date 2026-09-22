@@ -191,8 +191,8 @@ const previewShown = (value) =>
 function DetailFields({ fields }) {
   return (
     <div className="detail-grid">
-      {fields.map(([label, value]) => (
-        <div className="detail-field" key={label}>
+      {fields.map(([label, value, breakBefore]) => (
+        <div className={`detail-field${breakBefore ? " detail-field-break" : ""}`} key={label}>
           <span>{label}</span>
           <strong>{previewShown(value)}</strong>
         </div>
@@ -505,7 +505,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
             ]}
           />
         </div>
-        <div className="preview-section">
+        <div className="preview-section warehouse-preview-section">
           <h3>Warehouse Inspection</h3>
           <DetailFields
             fields={[
@@ -519,12 +519,12 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
               ["First Test Date", warehouse.firstTestDate],
               ["Pre-charge OCV", warehouse.preOcv],
               ["Pre-charge CCA", warehouse.preCca],
-              ["Second Test Date", warehouse.secondTestDate],
+              ["Second Test Date", warehouse.secondTestDate, true],
               ["12 Hrs OCV", warehouse.postOcv],
               ["12 Hrs CCA", warehouse.postCca],
-              ["Load Test (V)", warehouse.loadTestVoltage],
+              ["Load Test (V)", warehouse.loadTestVoltage, true],
               ["Load Test Result", warehouse.loadTestResult],
-              ["Judgment Results", warehouse.judgment],
+              ["Judgment Results", warehouse.judgment, true],
               ["Hydrometer", warehouse.hydrometer],
               ["Result", warehouse.result],
             ]}
