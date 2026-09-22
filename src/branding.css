@@ -1182,3 +1182,7 @@
 .review-row .ant-select-content.ant-select-content-has-value {
   overflow: unset !important;
 }
+
+.claim-intake-form #customer {
+  height: unset !important;
+}
