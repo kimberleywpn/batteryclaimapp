@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
+import { Alert, AutoComplete, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
 import { Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
@@ -30,9 +30,13 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
     : emptyIntake;
   const [formApi] = Form.useForm();
   const [lookupState, setLookupState] = useState("");
+  const [customerOptions, setCustomerOptions] = useState([]);
+  const [customerLookupLoading, setCustomerLookupLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const lookupRequest = useRef(null);
+  const customerLookupRequest = useRef(null);
+  const customerLookupTimer = useRef(null);
   const monthsManuallyEdited = useRef(Boolean(claim?.batteryUsedMonths));
   const enteredSerial = Form.useWatch("serial", formApi);
   const duplicateClaims = useMemo(() => {
@@ -44,7 +48,11 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
         String(item.serial || "").trim().toUpperCase() === serial,
     );
   }, [claims, claim?.id, enteredSerial]);
-  useEffect(() => () => lookupRequest.current?.abort(), []);
+  useEffect(() => () => {
+    lookupRequest.current?.abort();
+    customerLookupRequest.current?.abort();
+    clearTimeout(customerLookupTimer.current);
+  }, []);
   async function lookup() {
     const serial = String(formApi.getFieldValue("serial") || "").trim();
     if (!serial) return;
@@ -102,6 +110,58 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
     } finally {
       if (lookupRequest.current === controller) lookupRequest.current = null;
     }
+  }
+  function searchCustomers(value) {
+    clearTimeout(customerLookupTimer.current);
+    customerLookupRequest.current?.abort();
+    const search = String(value || "").trim();
+    if (search.length < 2) {
+      setCustomerOptions([]);
+      setCustomerLookupLoading(false);
+      return;
+    }
+    setCustomerLookupLoading(true);
+    customerLookupTimer.current = setTimeout(async () => {
+      const controller = new AbortController();
+      customerLookupRequest.current = controller;
+      try {
+        const result = await api(
+          `/api/customer-lookup?search=${encodeURIComponent(search)}`,
+          { signal: controller.signal },
+        );
+        if (controller.signal.aborted) return;
+        setCustomerOptions(
+          (result.records || []).map((row, index) => ({
+            key: `${row.debtorCode || ""}-${row.branchName || ""}-${index}`,
+            value: row.customerName || row.dealerName || "",
+            label: [
+              row.customerName || row.dealerName,
+              row.branchName,
+              row.debtorCode,
+            ].filter(Boolean).join(" | "),
+            ...row,
+          })),
+        );
+      } catch (err) {
+        if (err.name !== "AbortError") setError(err.message);
+      } finally {
+        if (customerLookupRequest.current === controller) {
+          customerLookupRequest.current = null;
+          setCustomerLookupLoading(false);
+        }
+      }
+    }, 300);
+  }
+  function selectCustomer(_value, option) {
+    formApi.setFieldsValue({
+      customer: option.customerName || option.dealerName || "",
+      dealerName: option.dealerName || "",
+      branchName: option.branchName || "",
+      debtorCode: option.debtorCode || "",
+      area: option.area || "",
+      salesperson: option.salesAgent || "",
+    });
+    setCustomerOptions([]);
   }
   async function submit() {
     setBusy(true);
@@ -245,7 +305,24 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
                 .join("\n")}
             />
           )}
-          {field("Customer Name", "customer", { required: true })}
+          <Form.Item
+            label="Customer Name"
+            name="customer"
+            required
+            normalize={(value) => String(value || "").toUpperCase()}
+            rules={[{ required: true, message: "Enter Customer Name." }]}
+          >
+            <AutoComplete
+              options={customerOptions}
+              onSearch={searchCustomers}
+              onSelect={selectCustomer}
+              filterOption={false}
+              allowClear
+              placeholder="Type To Search IV Customers"
+              notFoundContent={customerLookupLoading ? "Searching..." : null}
+            />
+          </Form.Item>
+          {field("Branch Code", "branchName")}
           {field("Area", "area", { required: true })}
           {field("Sales Agent", "salesperson", { required: true })}
           {field("Invoice No.", "invoiceNo")}

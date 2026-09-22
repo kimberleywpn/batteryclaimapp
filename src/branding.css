@@ -107,6 +107,10 @@
   font-size: 0.72rem;
 }
 
+.claim-intake-form .ant-select {
+  width: 100%;
+}
+
 .admin-dialog .ant-form-item,
 .warehouse-dialog .ant-form-item,
 .approval-dialog .ant-form-item {
