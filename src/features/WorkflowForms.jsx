@@ -136,7 +136,9 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             value: row.customerName || row.dealerName || "",
             label: [
               row.customerName || row.dealerName,
-              row.branchName,
+              [row.branchName, row.branchDisplayName]
+                .filter(Boolean)
+                .join(" - "),
               row.debtorCode,
             ].filter(Boolean).join(" | "),
             ...row,
