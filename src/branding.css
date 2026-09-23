@@ -731,6 +731,36 @@
   border: 0;
 }
 
+.back-to-top {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--blue);
+  border-radius: 50%;
+  color: #fff;
+  background: var(--blue);
+  box-shadow: 0 5px 16px #17242c2b;
+  display: grid;
+  place-items: center;
+}
+
+.back-to-top:hover {
+  color: #fff;
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+@media (max-width: 680px) {
+  .back-to-top {
+    right: 14px;
+    bottom: 14px;
+  }
+}
+
 .case-preview .preview-section {
   margin-top: 16px;
 }

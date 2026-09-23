@@ -20,6 +20,7 @@ import {
 } from "antd";
 import {
   BarChart3,
+  ArrowUp,
   Ban,
   BatteryCharging,
   Check,
@@ -122,6 +123,29 @@ function SignIn({ onSuccess }) {
         </AppButton>
       </Form>
     </main>
+  );
+}
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 280);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!visible) return null;
+  return (
+    <AppButton
+      className="back-to-top"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to top"
+      title="Back to top"
+    >
+      <ArrowUp size={18} />
+    </AppButton>
   );
 }
 
@@ -393,6 +417,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
   const warehouse = claim.warehouse || {};
   const admin = claim.admin || {};
   const approval = claim.approval || {};
+  const usedMileage = additionalMetrics(claim, admin, warehouse).usedMileage;
   const additionalFields = [
     ["Claim Date", admin.claimDate],
     ["Invoice Date", claim.invoiceDate],
@@ -402,6 +427,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
     ["Vehicle Registration Date", admin.vehicleRegistrationDate],
     ["Previous Installed Mileage", admin.mileage1],
     ["Current Mileage", admin.mileage2],
+    ["Used Mileage", usedMileage === "" ? "" : `${usedMileage} KM`],
     ["Direct Replaced S/N", admin.directReplacedSerialNo],
     ["Remarks", admin.remarks1],
   ];
@@ -1426,6 +1452,7 @@ function App() {
           </Suspense>
         )}
       </main>
+      <BackToTop />
     </div>
   );
 }
