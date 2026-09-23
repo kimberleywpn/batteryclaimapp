@@ -438,6 +438,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
     <Modal
       className="case-preview-modal"
       open
+      zIndex={1100}
       footer={null}
       closable={false}
       width={1120}
@@ -1253,7 +1254,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
         />
       )}
       {reportOpen && (
-        <Suspense fallback={<div className="loading-block"><Spin size="large" /></div>}><ReportPanel claims={claims} onClose={() => setReportOpen(false)} /></Suspense>
+        <Suspense fallback={<div className="loading-block"><Spin size="large" /></div>}><ReportPanel claims={claims} onClose={() => setReportOpen(false)} onOpenClaim={(claimId) => { setSelectedClaim(claims.find((claim) => claim.id === claimId) || null); }} /></Suspense>
       )}
       {deleteClaim && (
         <DeleteClaimDialog

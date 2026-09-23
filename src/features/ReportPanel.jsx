@@ -340,7 +340,7 @@ async function downloadPhotoReport(rows, setBusy) {
     setBusy(false);
   }
 }
-export default function ReportPanel({ claims, onClose }) {
+export default function ReportPanel({ claims, onClose, onOpenClaim }) {
   const rows = useMemo(() => claims.map(reportRecord), [claims]);
   const [query, setQuery] = useState("");
   const [from, setFrom] = useState("");
@@ -455,7 +455,18 @@ export default function ReportPanel({ claims, onClose }) {
     key: dataIndex,
     width:
       dataIndex === "itemDescription" || dataIndex === "dealer" ? 210 : 145,
-    render: (value) => shown(value),
+    render: (value, record) =>
+      dataIndex === "serial" && onOpenClaim ? (
+        <button
+          type="button"
+          className="report-serial-link"
+          onClick={() => onOpenClaim(record.claimId)}
+        >
+          {shown(value)}
+        </button>
+      ) : (
+        shown(value)
+      ),
   }));
   return (
     <Modal

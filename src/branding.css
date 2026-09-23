@@ -22,7 +22,7 @@
   height: 6px;
   flex: 0 0 6px;
   border-radius: 50%;
-  background: var(--blue);
+  background: rgb(61 121 143 / 68%);
 }
 
 @media print {
@@ -731,6 +731,21 @@
   border: 0;
 }
 
+.report-serial-link {
+  color: var(--blue-dark);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+}
+
+.report-serial-link:hover {
+  text-decoration-color: currentColor;
+}
+
 .back-to-top {
   position: fixed;
   right: 22px;
@@ -750,7 +765,7 @@
 
 .back-to-top:hover {
   color: #fff;
-  background: var(--blue-dark);
+  background: rgb(31 61 71 / 86%);
   border-color: var(--blue-dark);
 }
 
