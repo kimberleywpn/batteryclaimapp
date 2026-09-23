@@ -212,6 +212,13 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             method: "POST",
             body: JSON.stringify(data),
           });
+      notification.success({
+        message: claim ? "Claim Information Saved" : "Claim Created",
+        description: claim
+          ? `${data.serial || claim.serial} Was Updated Successfully.`
+          : `${data.serial} Was Created Successfully.`,
+        placement: "topRight",
+      });
       onSaved(result.claim);
       onClose();
     } catch (err) {
@@ -485,6 +492,12 @@ export function AdminProcess({ claim, onClose, onSaved }) {
         notification.success({
           message: "Sent For Approval",
           description: `${claim.serial} Is Now Awaiting Sales Approval.`,
+          placement: "topRight",
+        });
+      } else {
+        notification.success({
+          message: "Admin Details Saved",
+          description: `${claim.serial} Was Updated Successfully.`,
           placement: "topRight",
         });
       }
@@ -919,6 +932,11 @@ export function WarehouseData({ claim, onClose, onSaved }) {
           data,
           files: photos,
         }),
+      });
+      notification.success({
+        message: "Warehouse Data Saved",
+        description: `${claim.serial} Was Updated Successfully.`,
+        placement: "topRight",
       });
       onSaved(result.claim);
       onClose();

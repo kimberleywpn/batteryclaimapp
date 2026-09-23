@@ -8,6 +8,7 @@ import {
   Image,
   Input,
   Modal,
+  notification,
   Segmented,
   Select,
   Space,
@@ -1006,6 +1007,13 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
       (result.claims || []).forEach(onClaimSaved);
       setSelectedIds((current) => current.filter((id) => !(result.claims || []).some((claim) => claim.id === id)));
       setBulkResult({ received: result.claims?.length || 0, failed: result.errors?.length || 0 });
+      if (!result.errors?.length) {
+        notification.success({
+          message: "Cases Updated",
+          description: `${result.claims?.length || 0} Case(s) Marked As Received.`,
+          placement: "topRight",
+        });
+      }
       if (!result.errors?.length) setBulkOpen(false);
     } catch (err) {
       setBulkResult({ error: err.message });
