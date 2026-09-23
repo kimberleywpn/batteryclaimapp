@@ -395,6 +395,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
   const approval = claim.approval || {};
   const additionalFields = [
     ["Claim Date", admin.claimDate],
+    ["Invoice Date", claim.invoiceDate],
     ["Battery Installed Date", admin.batteryInstalledDate],
     ["Car Model / Variant", admin.carModel],
     ["Vehicle Registration Number", admin.vehicleRegistrationNo],
@@ -446,9 +447,13 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
               </AppButton>
             )}
             {onCancelClaim && (
-              <AppButton className="secondary danger-action" onClick={onCancelClaim}>
+              <AppButton
+                className="secondary icon-action danger-action"
+                onClick={onCancelClaim}
+                aria-label="Cancel Claim"
+                title="Cancel Claim"
+              >
                 <Ban size={17} />
-                Cancel Claim
               </AppButton>
             )}
             {onDelete && (
