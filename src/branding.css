@@ -549,14 +549,14 @@
 }
 
 .dashboard-visuals {
-  --smoky-rose: #73d2de;
-  --burnt-peach: #62d7ce;
-  --sunlit-clay: #62dab7;
-  --camel: #73da9a;
-  --dusty-olive: #91d87a;
-  --muted-teal: #b3d35c;
-  --charcoal-blue: #d9ca47;
-  --taupe-grey: #ffbc42;
+  --smoky-rose: #b5e48c;
+  --burnt-peach: #85d691;
+  --sunlit-clay: #56c599;
+  --camel: #21b3a0;
+  --dusty-olive: #009fa5;
+  --muted-teal: #008ba5;
+  --charcoal-blue: #00759e;
+  --taupe-grey: #1e6091;
   --dry-sage: var(--dusty-olive);
   --dusty-mauve: var(--smoky-rose);
   --light-caramel: var(--burnt-peach);
