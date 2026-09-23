@@ -270,6 +270,7 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
     "var(--dusty-mauve)",
     "var(--apricot-cream)",
     "var(--soft-blush)",
+    "var(--charcoal-blue)",
   ];
   const breakdowns = salesUser
     ? [

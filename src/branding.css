@@ -549,15 +549,23 @@
 }
 
 .dashboard-visuals {
-  --dry-sage: #b4bd9b;
-  --dusty-mauve: #bc455a;
-  --light-caramel: #fdba77;
-  --apricot-cream: #f6cf98;
-  --sky-blue-light: #81bdc3;
+  --smoky-rose: #98575d;
+  --burnt-peach: #db835d;
+  --sunlit-clay: #e6b25f;
+  --camel: #b39b5f;
+  --dusty-olive: #75805e;
+  --muted-teal: #7f9f9a;
+  --charcoal-blue: #314448;
+  --taupe-grey: #73595a;
+  --dry-sage: var(--dusty-olive);
+  --dusty-mauve: var(--smoky-rose);
+  --light-caramel: var(--burnt-peach);
+  --apricot-cream: var(--sunlit-clay);
+  --sky-blue-light: var(--muted-teal);
   --floral-white: #fdf8ec;
-  --soft-blush: #f4978e;
+  --soft-blush: var(--taupe-grey);
   --chart-tooltip-bg: #f9f7f3;
-  --ash-grey: #ccd5c3;
+  --ash-grey: var(--camel);
 }
 
 .dashboard-visuals {
@@ -744,6 +752,29 @@
 
 .report-serial-link:hover {
   text-decoration-color: currentColor;
+}
+
+/* Keep approval cards aligned with the main claims list. */
+.sales-card {
+  grid-template-columns: 1.2fr 0.9fr 1.5fr auto;
+  gap: 24px;
+  padding: 18px;
+}
+
+.sales-card .case-model,
+.sales-card .customer {
+  font-weight: 600;
+}
+
+.sales-card .secondary-text,
+.sales-card .case-area,
+.sales-card .case-agent {
+  margin-top: 4px;
+  font-size: 0.8rem;
+}
+
+.sales-card .stage-title {
+  font-size: 0.9rem;
 }
 
 .back-to-top {
