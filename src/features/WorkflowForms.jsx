@@ -227,9 +227,9 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
       setBusy(false);
     }
   }
-  const field = (label, name, { wide, type, required, ...options } = {}) => (
+  const field = (label, name, { wide, span, rowStart, type, required, ...options } = {}) => (
     <Form.Item
-      className={wide ? "wide" : ""}
+      className={[wide && "wide", span === 2 && "span-2", rowStart && "row-start"].filter(Boolean).join(" ")}
       label={label}
       name={name}
       required={required}
@@ -347,7 +347,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
                 .join("\n")}
             />
           )}
-          <Form.Item label="Customer Name" required>
+          <Form.Item className="row-start customer-field" label="Customer Name" required>
             <Form.Item
               name="customer"
               noStyle
@@ -378,9 +378,11 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
               displayRender={(labels) => labels[0] || ""}
             />
           </Form.Item>
+          <Form.Item name="area" noStyle>
+            <Input type="hidden" />
+          </Form.Item>
           {field("Branch Code", "branchName")}
-          {field("Area", "area", { required: true })}
-          {field("Sales Agent", "salesperson", { required: true })}
+          {field("Sales Agent", "salesperson", { required: true, rowStart: true })}
           {field("Invoice No.", "invoiceNo")}
           {field("Invoice Date", "invoiceDate", { type: "date" })}
           {field("Battery Used Months", "batteryUsedMonths", {
@@ -388,9 +390,9 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             min: 0,
             precision: 0,
           })}
+          {field("Brand", "itemGroup", { rowStart: true })}
           {field("Battery Model", "model", { required: true })}
-          {field("Brand", "itemGroup")}
-          {field("Item Description", "itemDescription")}
+          {field("Item Description", "itemDescription", { span: 2 })}
         </div>
         {error && (
           <Alert className="app-alert" type="error" showIcon message={error} />
