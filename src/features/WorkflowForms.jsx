@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Cascader, Collapse, Form, Image, Input, Modal, notification, Select, Upload as AntUpload } from "antd";
+import { Alert, Cascader, Collapse, Form, Image, Input, message, Modal, notification, Select, Upload as AntUpload } from "antd";
 import { Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
@@ -212,13 +212,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             method: "POST",
             body: JSON.stringify(data),
           });
-      notification.success({
-        message: claim ? "Claim Information Saved" : "Claim Created",
-        description: claim
-          ? `${data.serial || claim.serial} Was Updated Successfully.`
-          : `${data.serial} Was Created Successfully.`,
-        placement: "topRight",
-      });
+      message.success(claim ? "Claim Information Saved" : "Claim Created");
       onSaved(result.claim);
       onClose();
     } catch (err) {
@@ -530,17 +524,9 @@ export function AdminProcess({ claim, onClose, onSaved }) {
         body: JSON.stringify({ version: claim.version, action, data, files: attachments }),
       });
       if (action === "submit") {
-        notification.success({
-          message: "Sent For Approval",
-          description: `${claim.serial} Is Now Awaiting Sales Approval.`,
-          placement: "topRight",
-        });
+        message.success("Sent For Approval");
       } else {
-        notification.success({
-          message: "Admin Details Saved",
-          description: `${claim.serial} Was Updated Successfully.`,
-          placement: "topRight",
-        });
+        message.success("Admin Details Saved");
       }
       onSaved(result.claim);
       onClose();
@@ -1009,11 +995,7 @@ export function WarehouseData({ claim, onClose, onSaved }) {
           files: photos,
         }),
       });
-      notification.success({
-        message: "Warehouse Data Saved",
-        description: `${claim.serial} Was Updated Successfully.`,
-        placement: "topRight",
-      });
+      message.success("Warehouse Data Saved");
       onSaved(result.claim);
       onClose();
     } catch (err) {
@@ -1254,17 +1236,9 @@ export function ApprovalForm({ claim, onClose, onSaved, canApprove = true }) {
           data: values,
         }),
       });
-      notification.success({
-        message:
-          values.decision === "approved"
-            ? "Result Approved"
-            : "Admin Review Requested",
-        description:
-          values.decision === "approved"
-            ? `${claim.serial} Is Ready For Settlement.`
-            : `${claim.serial} Has Been Returned For Admin Review.`,
-        placement: "topRight",
-      });
+      message.success(
+        values.decision === "approved" ? "Result Approved" : "Admin Review Requested",
+      );
       onSaved(result.claim);
       onClose();
     } catch (err) {

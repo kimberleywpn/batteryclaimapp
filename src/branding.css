@@ -912,9 +912,8 @@
 
 .wan-match-list button {
   display: grid;
-  grid-template-columns: minmax(140px, 0.9fr) minmax(0, 2.1fr);
-  gap: 4px 12px;
-  align-items: center;
+  grid-template-columns: 1fr;
+  gap: 5px;
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--line);
@@ -932,42 +931,30 @@
 .wan-match-list button span,
 .wan-match-list button small {
   color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .wan-match-list button small {
-  grid-column: 1;
+  grid-column: auto;
 }
 
 .wan-match-list button .wan-replace-item {
-  grid-column: 2;
+  grid-column: auto;
 }
 
 .wan-match-list button .wan-warranty-status {
-  grid-column: 1 / -1;
+  grid-column: auto;
   text-align: left;
+}
+
+.wan-match-list button strong {
+  font-size: 1rem;
 }
 
 @media (width <= 600px) {
   .settlement-lookup-action .secondary {
     justify-content: center;
     width: 100%;
-  }
-
-  .wan-match-list button {
-    grid-template-columns: 1fr;
-  }
-
-  .wan-match-list button small {
-    grid-column: auto;
-  }
-
-  .wan-match-list button .wan-replace-item {
-    grid-column: auto;
-  }
-
-  .wan-match-list button .wan-warranty-status {
-    grid-column: auto;
-    text-align: left;
   }
 }
 
