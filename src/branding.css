@@ -912,7 +912,7 @@
 
 .wan-match-list button {
   display: grid;
-  grid-template-columns: minmax(110px, 0.8fr) minmax(90px, 0.7fr) minmax(180px, 1.7fr);
+  grid-template-columns: minmax(140px, 0.9fr) minmax(0, 2.1fr);
   gap: 4px 12px;
   align-items: center;
   width: 100%;
@@ -938,9 +938,13 @@
   grid-column: 1;
 }
 
+.wan-match-list button .wan-replace-item {
+  grid-column: 2;
+}
+
 .wan-match-list button .wan-warranty-status {
-  grid-column: 3;
-  text-align: right;
+  grid-column: 1 / -1;
+  text-align: left;
 }
 
 @media (width <= 600px) {
@@ -954,6 +958,10 @@
   }
 
   .wan-match-list button small {
+    grid-column: auto;
+  }
+
+  .wan-match-list button .wan-replace-item {
     grid-column: auto;
   }
 

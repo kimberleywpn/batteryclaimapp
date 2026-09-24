@@ -857,9 +857,9 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             >
               <strong>{shown(record.wanNo)}</strong>
               <span>{shown(record.settleDate)}</span>
-              <span>{shown(record.replaceItem)}</span>
-              <small>Replace S/N: {shown(record.replaceSerialNo)}</small>
-              <small className="wan-warranty-status">Warranty Status: {shown(record.warrantyStatus)}</small>
+              <small>Replace S/N: {record.replaceSerialNo || "-"}</small>
+              <span className="wan-replace-item">{shown(record.replaceItem)}</span>
+              <small className="wan-warranty-status">{shown(record.warrantyStatus)}</small>
             </button>
           ))}
         </div>
