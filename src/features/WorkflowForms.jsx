@@ -406,6 +406,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
 
 const adminResults = [
   "Compensation Of Claims",
+  "Claim In Value",
   "Loyalty Compensation",
   "Recharge & Returned (After Service)",
   "Recharged & Returned (New Battery)",
