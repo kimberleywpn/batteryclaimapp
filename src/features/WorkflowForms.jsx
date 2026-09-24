@@ -347,7 +347,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
                 .join("\n")}
             />
           )}
-          <Form.Item className="row-start customer-field" label="Customer Name" required>
+          <Form.Item className="row-start customer-field span-2" label="Customer Name" required>
             <Form.Item
               name="customer"
               noStyle
@@ -381,7 +381,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
           <Form.Item name="area" noStyle>
             <Input type="hidden" />
           </Form.Item>
-          {field("Branch Code", "branchName")}
+          {field("Branch Code", "branchName", { span: 2 })}
           {field("Sales Agent", "salesperson", { required: true, rowStart: true })}
           {field("Invoice No.", "invoiceNo")}
           {field("Invoice Date", "invoiceDate", { type: "date" })}
@@ -446,6 +446,8 @@ export function AdminProcess({ claim, onClose, onSaved }) {
   const [attachmentLoading, setAttachmentLoading] = useState(true);
   const [attachments, setAttachments] = useState([]);
   const [previewImage, setPreviewImage] = useState("");
+  const [wanLookupLoading, setWanLookupLoading] = useState(false);
+  const [wanMatches, setWanMatches] = useState([]);
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
@@ -465,6 +467,43 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           : "Not Sent";
   const settlement =
     claim.status === "settlement" || claim.status === "complete";
+  function applyWanDetails(record) {
+    formApi.setFieldsValue({
+      wanNo: record.wanNo || "",
+      replaceItem: record.replaceItem || "",
+      replaceSerialNo: record.replaceSerialNo || "",
+      settleDate: record.settleDate || "",
+    });
+    setWanMatches([]);
+    notification.success({
+      message: "WAN Details Filled",
+      description: `${record.wanNo || "Selected WAN"} Was Applied To The Settlement.`,
+      placement: "topRight",
+    });
+  }
+  async function findWanDetails() {
+    setError("");
+    try {
+      setWanLookupLoading(true);
+      const result = await api(`/api/wan-lookup?serial=${encodeURIComponent(claim.serial)}`);
+      const records = result.records || [];
+      if (!records.length) {
+        notification.info({
+          message: "No WAN Record Found",
+          description: `No WAN Details Were Found For ${claim.serial}.`,
+          placement: "topRight",
+        });
+      } else if (records.length === 1) {
+        applyWanDetails(records[0]);
+      } else {
+        setWanMatches(records);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setWanLookupLoading(false);
+    }
+  }
   async function save(action) {
     setError("");
     if (attachmentLoading) {
@@ -632,6 +671,18 @@ export function AdminProcess({ claim, onClose, onSaved }) {
         </fieldset>
         <fieldset className="admin-section">
           <legend>Settlement</legend>
+          <div className="settlement-lookup-action">
+            <AppButton
+              type="button"
+              className="secondary"
+              loading={wanLookupLoading}
+              disabled={busy}
+              onClick={findWanDetails}
+            >
+              <SearchIcon size={16} />
+              {wanLookupLoading ? "Searching..." : "Lookup WAN Details"}
+            </AppButton>
+          </div>
           <div className="admin-fields">
             {input("WAN No.", "wanNo")}
             {input("Replace Item", "replaceItem")}
@@ -790,6 +841,28 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           )}
         </div>
       </Form>
+      <Modal
+        title={`Select WAN Record For ${claim.serial}`}
+        open={wanMatches.length > 1}
+        footer={null}
+        onCancel={() => setWanMatches([])}
+        destroyOnHidden
+      >
+        <div className="wan-match-list">
+          {wanMatches.map((record, index) => (
+            <button
+              type="button"
+              key={`${record.wanNo || "wan"}-${record.replaceSerialNo || index}`}
+              onClick={() => applyWanDetails(record)}
+            >
+              <strong>{shown(record.wanNo)}</strong>
+              <span>{shown(record.settleDate)}</span>
+              <span>{shown(record.replaceItem)}</span>
+              <small>{shown(record.replaceSerialNo)}</small>
+            </button>
+          ))}
+        </div>
+      </Modal>
       {previewImage && (
         <Image
           styles={{ root: { display: "none" } }}
