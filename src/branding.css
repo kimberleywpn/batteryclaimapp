@@ -935,7 +935,12 @@
 }
 
 .wan-match-list button small {
-  grid-column: 1 / -1;
+  grid-column: 1;
+}
+
+.wan-match-list button .wan-warranty-status {
+  grid-column: 3;
+  text-align: right;
 }
 
 @media (width <= 600px) {
@@ -950,6 +955,11 @@
 
   .wan-match-list button small {
     grid-column: auto;
+  }
+
+  .wan-match-list button .wan-warranty-status {
+    grid-column: auto;
+    text-align: left;
   }
 }
 
