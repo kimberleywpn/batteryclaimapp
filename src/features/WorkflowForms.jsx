@@ -312,6 +312,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
             required: true,
           })}
           {field("CRF No.", "crfNo")}
+          {field("Area", "area")}
           {lookupState && (
             <Alert
               className="app-alert lookup-state wide"
@@ -371,9 +372,6 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
               placeholder="Type To Search Customers"
               displayRender={(labels) => labels[0] || ""}
             />
-          </Form.Item>
-          <Form.Item name="area" noStyle>
-            <Input type="hidden" />
           </Form.Item>
           {field("Branch Code", "branchName", { span: 2 })}
           {field("Sales Agent", "salesperson", { required: true, rowStart: true })}
