@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Cascader, Collapse, Form, Image, Input, message, Modal, notification, Select, Upload as AntUpload } from "antd";
-import { Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
+import { Camera, Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
 import { completedMonthsBetween, shown, titleCase } from "../utils/claimFormatting";
@@ -337,7 +337,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
                 .slice(0, 3)
                 .map(
                   (item) =>
-                    `${item.caseNumber || item.id} | ${shown(item.claimDate)} | ${titleCase(item.status)}`,
+                    `${(item.caseNumber || item.id || "").startsWith("HIST-") ? item.crfNo || item.serial : item.caseNumber || item.id} | ${shown(item.claimDate)} | ${titleCase(item.status)}`,
                 )
                 .join("\n")}
             />
@@ -930,6 +930,10 @@ export function WarehouseData({ claim, onClose, onSaved }) {
   const [formApi] = Form.useForm();
   const [photos, setPhotos] = useState({ battery: [], test: [] });
   const [previewImage, setPreviewImage] = useState("");
+  const [ocrReview, setOcrReview] = useState(null);
+  const [ocrTest, setOcrTest] = useState("first");
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const ocrInput = useRef(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -980,6 +984,56 @@ export function WarehouseData({ claim, onClose, onSaved }) {
         })),
     });
     return false;
+  }
+  async function scanTestSheet(file) {
+    if (!file?.type?.startsWith("image/")) return;
+    setOcrBusy(true);
+    setError("");
+    try {
+      const compressed = await compressImageFile(file);
+      const photo = await fileAsPhoto(compressed);
+      const detected = await api("/api/ocr/test-sheet", {
+        method: "POST",
+        body: JSON.stringify({ image: photo }),
+      });
+      setOcrReview({
+        photo,
+        testDate: detected.testDate || "",
+        voltage: detected.voltage || "",
+        measuredCca: detected.measuredCca || "",
+        result: detected.result || "",
+        format: detected.format || "Unknown",
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setOcrBusy(false);
+      if (ocrInput.current) ocrInput.current.value = "";
+    }
+  }
+  function applyOcrResult() {
+    if (!ocrReview) return;
+    formApi.setFieldsValue(
+      ocrTest === "first"
+        ? {
+            firstTestDate: ocrReview.testDate,
+            preOcv: ocrReview.voltage,
+            preCca: ocrReview.measuredCca,
+            result: ocrReview.result,
+          }
+        : {
+            secondTestDate: ocrReview.testDate,
+            postOcv: ocrReview.voltage,
+            postCca: ocrReview.measuredCca,
+            result: ocrReview.result,
+          },
+    );
+    setPhotos((current) => ({
+      ...current,
+      test: [...current.test, ocrReview.photo].slice(0, 8),
+    }));
+    setOcrReview(null);
+    message.success("Test Sheet Applied");
   }
   async function submit() {
     setBusy(true);
@@ -1176,6 +1230,40 @@ export function WarehouseData({ claim, onClose, onSaved }) {
               {input("Result", "result")}
             </div>
             {photoGroup("Battery Photos", "battery")}
+            <section className="ocr-scan-section">
+              <div>
+                <strong>Test Sheet OCR</strong>
+                <span>Extract date, voltage, measured CCA and result</span>
+              </div>
+              <Select
+                value={ocrTest}
+                onChange={setOcrTest}
+                options={[
+                  { value: "first", label: "First Test" },
+                  { value: "second", label: "Second Test" },
+                ]}
+                disabled={busy || ocrBusy}
+                aria-label="Select test stage"
+              />
+              <AppButton
+                type="button"
+                className="secondary"
+                onClick={() => ocrInput.current?.click()}
+                loading={ocrBusy}
+                disabled={busy || ocrBusy || photos.test.length >= 8}
+              >
+                {!ocrBusy && <Camera size={17} />}
+                Scan Test Sheet
+              </AppButton>
+              <input
+                ref={ocrInput}
+                className="ocr-file-input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(event) => scanTestSheet(event.target.files?.[0])}
+              />
+            </section>
             {photoGroup("Test Result Photos", "test")}
           </div>
           {error && (
@@ -1206,6 +1294,53 @@ export function WarehouseData({ claim, onClose, onSaved }) {
           src={previewImage}
         />
       )}
+      <Modal
+        title={`Review ${ocrTest === "first" ? "First" : "Second"} Test Scan`}
+        open={Boolean(ocrReview)}
+        onCancel={() => setOcrReview(null)}
+        onOk={applyOcrResult}
+        okText="Apply Result"
+        destroyOnHidden
+      >
+        {ocrReview && (
+          <div className="ocr-review-fields">
+            <span className="ocr-format">Detected format: {ocrReview.format}</span>
+            <label>
+              Test Date
+              <AppFieldInput
+                type="date"
+                value={ocrReview.testDate}
+                onChange={(event) => setOcrReview((current) => ({ ...current, testDate: event.target.value }))}
+              />
+            </label>
+            <label>
+              Voltage (V)
+              <AppFieldInput
+                type="number"
+                step="0.01"
+                value={ocrReview.voltage}
+                onChange={(event) => setOcrReview((current) => ({ ...current, voltage: event.target.value }))}
+              />
+            </label>
+            <label>
+              Measured CCA
+              <AppFieldInput
+                type="number"
+                step="1"
+                value={ocrReview.measuredCca}
+                onChange={(event) => setOcrReview((current) => ({ ...current, measuredCca: event.target.value }))}
+              />
+            </label>
+            <label>
+              Result
+              <AppFieldInput
+                value={ocrReview.result}
+                onChange={(event) => setOcrReview((current) => ({ ...current, result: event.target.value.toUpperCase() }))}
+              />
+            </label>
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

@@ -1426,3 +1426,73 @@
 .claim-intake-form #customer {
   height: unset !important;
 }
+
+.ocr-scan-section {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) 150px auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  display: grid;
+}
+
+.ocr-scan-section > div {
+  min-width: 0;
+  display: grid;
+}
+
+.ocr-scan-section > div span,
+.ocr-format {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.ocr-scan-section .ant-select,
+.ocr-review-fields input {
+  width: 100%;
+}
+
+.ocr-file-input {
+  display: none;
+}
+
+.ocr-review-fields {
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  display: grid;
+}
+
+.ocr-review-fields .ocr-format {
+  grid-column: 1 / -1;
+}
+
+.ocr-review-fields label {
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: grid;
+}
+
+.ocr-review-fields input {
+  height: 40px;
+  border: 1px solid #cbd7db;
+  border-radius: 5px;
+  padding: 0 10px;
+}
+
+@media (width <= 760px) {
+  .ocr-scan-section {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .ocr-review-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .ocr-review-fields .ocr-format {
+    grid-column: auto;
+  }
+}
