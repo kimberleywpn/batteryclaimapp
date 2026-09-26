@@ -894,11 +894,11 @@ const fileAsPhoto = (file) =>
     reader.onerror = () => reject(new Error(`Could Not Read ${file.name}`));
     reader.readAsDataURL(file);
   });
-const compressImageFile = async (file) => {
+const compressImageFile = async (file, maxSide = 1600, quality = 0.82) => {
   if (!file.type.startsWith("image/") || typeof createImageBitmap !== "function")
     return file;
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
   canvas.height = Math.max(1, Math.round(bitmap.height * scale));
@@ -908,7 +908,7 @@ const compressImageFile = async (file) => {
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   const blob = await new Promise((resolve) =>
-    canvas.toBlob(resolve, "image/jpeg", 0.82),
+    canvas.toBlob(resolve, "image/jpeg", quality),
   );
   return blob
     ? new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
@@ -990,11 +990,17 @@ export function WarehouseData({ claim, onClose, onSaved }) {
     setOcrBusy(true);
     setError("");
     try {
-      const compressed = await compressImageFile(file);
-      const photo = await fileAsPhoto(compressed);
+      const [compressed, ocrImage] = await Promise.all([
+        compressImageFile(file),
+        compressImageFile(file, 2400, 0.95),
+      ]);
+      const [photo, scanPhoto] = await Promise.all([
+        fileAsPhoto(compressed),
+        fileAsPhoto(ocrImage),
+      ]);
       const detected = await api("/api/ocr/test-sheet", {
         method: "POST",
-        body: JSON.stringify({ image: photo }),
+        body: JSON.stringify({ image: scanPhoto }),
       });
       setOcrReview({
         photo,
