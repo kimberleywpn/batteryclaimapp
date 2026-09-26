@@ -1306,13 +1306,14 @@ export function WarehouseData({ claim, onClose, onSaved }) {
         onCancel={() => setOcrReview(null)}
         onOk={applyOcrResult}
         okText="Apply Result"
+        okButtonProps={{ disabled: !ocrReview?.testDate }}
         destroyOnHidden
       >
         {ocrReview && (
           <div className="ocr-review-fields">
             <span className="ocr-format">Detected format: {ocrReview.format}</span>
             <label>
-              Test Date
+              Test Date *
               <AppFieldInput
                 type="date"
                 value={ocrReview.testDate}
