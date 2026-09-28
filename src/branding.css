@@ -1560,8 +1560,7 @@
 
 .ocr-review-preview {
   grid-column: 1 / -1;
-  min-height: 180px;
-  max-height: 260px;
+  height: 260px;
   border: 1px solid var(--line);
   background: #f8faf9;
   display: grid;
@@ -1576,7 +1575,8 @@
 }
 
 .ocr-review-preview img {
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center center;
   display: block;
 }
 

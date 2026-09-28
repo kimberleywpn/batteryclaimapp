@@ -1235,7 +1235,6 @@ export function WarehouseData({ claim, onClose, onSaved }) {
                 hidden
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={(event) => scanTestSheet(event.target.files?.[0])}
               />
             </section>
