@@ -874,8 +874,10 @@ const warehouseFieldNames = [
   "judgment",
   "preOcv",
   "preCca",
+  "preResult",
   "postOcv",
   "postCca",
+  "postResult",
   "loadTestVoltage",
   "loadTestResult",
   "hydrometer",
@@ -928,6 +930,8 @@ export function WarehouseData({ claim, onClose, onSaved }) {
   const initialValues = Object.fromEntries(
     warehouseFieldNames.map((name) => [name, claim.warehouse?.[name] || ""]),
   );
+  // Older records stored one shared result; retain it as the final-test result.
+  initialValues.postResult ||= claim.warehouse?.result || "";
   const [formApi] = Form.useForm();
   const [photos, setPhotos] = useState({ battery: [], test: [] });
   const [previewImage, setPreviewImage] = useState("");
@@ -1026,13 +1030,13 @@ export function WarehouseData({ claim, onClose, onSaved }) {
             firstTestDate: ocrReview.testDate,
             preOcv: ocrReview.voltage,
             preCca: ocrReview.measuredCca,
-            result: ocrReview.result,
+            preResult: ocrReview.result,
           }
         : {
             secondTestDate: ocrReview.testDate,
             postOcv: ocrReview.voltage,
             postCca: ocrReview.measuredCca,
-            result: ocrReview.result,
+            postResult: ocrReview.result,
           },
     );
     setPhotos((current) => ({
@@ -1248,6 +1252,7 @@ export function WarehouseData({ claim, onClose, onSaved }) {
                 step: "0.01",
               })}
               {input("CCA (A)", "preCca", { type: "number", min: 0, step: 1 })}
+              {input("Result", "preResult")}
             </fieldset>
             <fieldset className="test-box">
               <legend>After-Charge Data (12 Hours)</legend>
@@ -1258,6 +1263,7 @@ export function WarehouseData({ claim, onClose, onSaved }) {
                 step: "0.01",
               })}
               {input("CCA (A)", "postCca", { type: "number", min: 0, step: 1 })}
+              {input("Result", "postResult")}
             </fieldset>
             <fieldset className="test-box load-test-box">
               <legend>Load Test Data</legend>
@@ -1271,7 +1277,6 @@ export function WarehouseData({ claim, onClose, onSaved }) {
             <div className="warehouse-row">
               {input("Judgement Result", "judgment")}
               {input("Hydrometer", "hydrometer")}
-              {input("Result", "result")}
             </div>
             {photoGroup("Battery Photos", "battery")}
             {photoGroup("Test Result Photos", "test")}

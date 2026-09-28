@@ -976,7 +976,7 @@
 
 .warehouse-dialog .test-box {
   grid-column: 1 / -1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .warehouse-dialog .test-box > legend {
@@ -1167,7 +1167,6 @@
 
 @media (max-width: 760px) {
   .case-preview-modal,
-  .workflow-modal,
   .report-modal {
     top: 0;
     width: 100% !important;
@@ -1175,9 +1174,55 @@
     margin: 0;
   }
 
+  .workflow-modal {
+    top: 0;
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px);
+    margin: 12px auto 0;
+  }
+
+  .workflow-modal .ant-modal-content,
+  .workflow-modal .ant-modal-body,
   .workflow-modal .data-dialog {
-    height: 100vh;
-    max-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .workflow-modal .data-dialog {
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .workflow-modal .warehouse-fields,
+  .workflow-modal .warehouse-row,
+  .workflow-modal .test-box,
+  .workflow-modal .warehouse-fields > *,
+  .workflow-modal .warehouse-row > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .workflow-modal .ant-form-item,
+  .workflow-modal .ant-picker,
+  .workflow-modal .ant-input,
+  .workflow-modal input,
+  .workflow-modal textarea {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .workflow-modal .panel-heading,
+  .workflow-modal .panel-heading h2 {
+    min-width: 0;
+  }
+
+  .workflow-modal .panel-heading h2 {
+    flex-wrap: wrap;
+    overflow-wrap: anywhere;
   }
 
   .report-modal .report-dialog {

@@ -553,14 +553,15 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
               ["First Test Date", warehouse.firstTestDate],
               ["Pre-charge OCV", warehouse.preOcv],
               ["Pre-charge CCA", warehouse.preCca],
+              ["Pre-charge Result", warehouse.preResult],
               ["Second Test Date", warehouse.secondTestDate, true],
               ["12 Hrs OCV", warehouse.postOcv],
               ["12 Hrs CCA", warehouse.postCca],
+              ["After-charge Result", warehouse.postResult || warehouse.result],
               ["Load Test (V)", warehouse.loadTestVoltage, true],
               ["Load Test Result", warehouse.loadTestResult],
               ["Judgment Results", warehouse.judgment, true],
               ["Hydrometer", warehouse.hydrometer],
-              ["Result", warehouse.result],
             ]}
           />
         </div>
