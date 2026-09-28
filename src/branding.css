@@ -1558,6 +1558,28 @@
   grid-column: 1 / -1;
 }
 
+.ocr-review-preview {
+  grid-column: 1 / -1;
+  min-height: 180px;
+  max-height: 260px;
+  border: 1px solid var(--line);
+  background: #f8faf9;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.ocr-review-preview .ant-image,
+.ocr-review-preview img {
+  width: 100%;
+  height: 100%;
+}
+
+.ocr-review-preview img {
+  object-fit: contain;
+  display: block;
+}
+
 .ocr-review-fields label {
   gap: 6px;
   font-size: 0.8rem;
@@ -1593,6 +1615,10 @@
   }
 
   .ocr-review-fields .ocr-format {
+    grid-column: auto;
+  }
+
+  .ocr-review-preview {
     grid-column: auto;
   }
 }

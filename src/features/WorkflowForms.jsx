@@ -1313,6 +1313,13 @@ export function WarehouseData({ claim, onClose, onSaved }) {
         {ocrReview && (
           <div className="ocr-review-fields">
             <span className="ocr-format">Detected format: {ocrReview.format}</span>
+            <div className="ocr-review-preview">
+              <Image
+                src={`data:${ocrReview.photo.type};base64,${ocrReview.photo.base64}`}
+                alt="Scanned test sheet"
+                preview={{ mask: "Open Full Image" }}
+              />
+            </div>
             <label>
               Test Date *
               <AppFieldInput
