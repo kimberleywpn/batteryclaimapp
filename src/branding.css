@@ -1523,6 +1523,23 @@
   width: 140px;
 }
 
+.ocr-scan-actions .ant-select-selector {
+  min-height: 38px !important;
+  padding-block: 0 !important;
+  align-items: center;
+}
+
+.ocr-scan-actions .ant-select-selection-wrap {
+  align-self: stretch;
+  align-items: center;
+}
+
+.ocr-scan-actions .ant-select-selection-item,
+.ocr-scan-actions .ant-select-selection-placeholder {
+  height: 38px;
+  line-height: 38px !important;
+}
+
 .ocr-review-fields input {
   width: 100%;
 }
