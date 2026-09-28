@@ -1192,12 +1192,12 @@ export function WarehouseData({ claim, onClose, onSaved }) {
             </p>
           </div>
           <div className="warehouse-fields">
-            <div className="warehouse-row">
+            <div className="warehouse-row warehouse-primary-row">
               {input("Date Received", "receivedDate", { type: "date" })}
-            </div>
-            <div className="warehouse-row">
               {input("Battery Batch / Code", "batchCode")}
               {input("Production Date", "productDate")}
+            </div>
+            <div className="warehouse-row warehouse-secondary-row">
               {input("Factory", "factory")}
               {input("Judgement Result", "judgment")}
               {input("Hydrometer", "hydrometer")}
