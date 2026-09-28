@@ -1194,17 +1194,13 @@ export function WarehouseData({ claim, onClose, onSaved }) {
           <div className="warehouse-fields">
             <div className="warehouse-row">
               {input("Date Received", "receivedDate", { type: "date" })}
-              <Form.Item label="Battery Model">
-                <Input value={claim.model || ""} readOnly />
-              </Form.Item>
-              <Form.Item label="Serial Number">
-                <Input value={claim.serial} readOnly />
-              </Form.Item>
             </div>
             <div className="warehouse-row">
               {input("Battery Batch / Code", "batchCode")}
               {input("Production Date", "productDate")}
               {input("Factory", "factory")}
+              {input("Judgement Result", "judgment")}
+              {input("Hydrometer", "hydrometer")}
             </div>
             <section className="ocr-scan-section">
               <div className="ocr-scan-copy">
@@ -1274,10 +1270,6 @@ export function WarehouseData({ claim, onClose, onSaved }) {
               })}
               {input("Result", "loadTestResult")}
             </fieldset>
-            <div className="warehouse-row">
-              {input("Judgement Result", "judgment")}
-              {input("Hydrometer", "hydrometer")}
-            </div>
             {photoGroup("Battery Photos", "battery")}
             {photoGroup("Test Result Photos", "test")}
           </div>
