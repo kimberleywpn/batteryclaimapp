@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Cascader, Collapse, Form, Image, Input, message, Modal, notification, Select, Upload as AntUpload } from "antd";
 import { Camera, Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
+import dayjs from "dayjs";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
 import { completedMonthsBetween, shown, titleCase } from "../utils/claimFormatting";
@@ -1004,7 +1005,7 @@ export function WarehouseData({ claim, onClose, onSaved }) {
       });
       setOcrReview({
         photo,
-        testDate: detected.testDate || "",
+        testDate: dayjs().format("YYYY-MM-DD"),
         voltage: detected.voltage || "",
         measuredCca: detected.measuredCca || "",
         result: detected.result || "",
@@ -1202,33 +1203,36 @@ export function WarehouseData({ claim, onClose, onSaved }) {
               {input("Factory", "factory")}
             </div>
             <section className="ocr-scan-section">
-              <div>
+              <div className="ocr-scan-copy">
                 <strong>Test Sheet OCR</strong>
                 <span>Extract voltage, measured CCA and result</span>
               </div>
-              <Select
-                value={ocrTest}
-                onChange={setOcrTest}
-                options={[
-                  { value: "first", label: "First Test" },
-                  { value: "second", label: "Second Test" },
-                ]}
-                disabled={busy || ocrBusy}
-                aria-label="Select test stage"
-              />
-              <AppButton
-                type="button"
-                className="secondary"
-                onClick={() => ocrInput.current?.click()}
-                loading={ocrBusy}
-                disabled={busy || ocrBusy || photos.test.length >= 8}
-              >
-                {!ocrBusy && <Camera size={17} />}
-                Scan Test Sheet
-              </AppButton>
+              <div className="ocr-scan-actions">
+                <Select
+                  value={ocrTest}
+                  onChange={setOcrTest}
+                  options={[
+                    { value: "first", label: "First Test" },
+                    { value: "second", label: "Second Test" },
+                  ]}
+                  disabled={busy || ocrBusy}
+                  aria-label="Select test stage"
+                />
+                <AppButton
+                  type="button"
+                  className="secondary"
+                  onClick={() => ocrInput.current?.click()}
+                  loading={ocrBusy}
+                  disabled={busy || ocrBusy || photos.test.length >= 8}
+                >
+                  {!ocrBusy && <Camera size={17} />}
+                  Scan Test Sheet
+                </AppButton>
+              </div>
               <input
                 ref={ocrInput}
                 className="ocr-file-input"
+                hidden
                 type="file"
                 accept="image/*"
                 capture="environment"

@@ -1431,25 +1431,40 @@
   border: 1px solid var(--line);
   border-radius: 6px;
   grid-column: 1 / -1;
-  grid-template-columns: minmax(0, 1fr) 150px auto;
+  background: #f8faf9;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
-  display: grid;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  display: flex;
 }
 
-.ocr-scan-section > div {
+.ocr-scan-copy {
   min-width: 0;
   display: grid;
 }
 
-.ocr-scan-section > div span,
+.ocr-scan-copy strong {
+  font-size: 0.86rem;
+}
+
+.ocr-scan-copy span,
 .ocr-format {
   color: var(--muted);
   font-size: 0.76rem;
 }
 
-.ocr-scan-section .ant-select,
+.ocr-scan-actions {
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 10px;
+  display: flex;
+}
+
+.ocr-scan-actions .ant-select {
+  width: 140px;
+}
+
 .ocr-review-fields input {
   width: 100%;
 }
@@ -1485,7 +1500,17 @@
 @media (width <= 760px) {
   .ocr-scan-section {
     grid-column: auto;
-    grid-template-columns: 1fr;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ocr-scan-actions {
+    width: 100%;
+  }
+
+  .ocr-scan-actions .ant-select,
+  .ocr-scan-actions button {
+    flex: 1 1 0;
   }
 
   .ocr-review-fields {
