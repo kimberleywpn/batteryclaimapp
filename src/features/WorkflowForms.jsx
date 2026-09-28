@@ -1201,6 +1201,40 @@ export function WarehouseData({ claim, onClose, onSaved }) {
               {input("Production Date", "productDate")}
               {input("Factory", "factory")}
             </div>
+            <section className="ocr-scan-section">
+              <div>
+                <strong>Test Sheet OCR</strong>
+                <span>Extract voltage, measured CCA and result</span>
+              </div>
+              <Select
+                value={ocrTest}
+                onChange={setOcrTest}
+                options={[
+                  { value: "first", label: "First Test" },
+                  { value: "second", label: "Second Test" },
+                ]}
+                disabled={busy || ocrBusy}
+                aria-label="Select test stage"
+              />
+              <AppButton
+                type="button"
+                className="secondary"
+                onClick={() => ocrInput.current?.click()}
+                loading={ocrBusy}
+                disabled={busy || ocrBusy || photos.test.length >= 8}
+              >
+                {!ocrBusy && <Camera size={17} />}
+                Scan Test Sheet
+              </AppButton>
+              <input
+                ref={ocrInput}
+                className="ocr-file-input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(event) => scanTestSheet(event.target.files?.[0])}
+              />
+            </section>
             <fieldset className="test-box">
               <legend>Pre-Charge Data</legend>
               {input("First Test Date", "firstTestDate", { type: "date" })}
@@ -1236,40 +1270,6 @@ export function WarehouseData({ claim, onClose, onSaved }) {
               {input("Result", "result")}
             </div>
             {photoGroup("Battery Photos", "battery")}
-            <section className="ocr-scan-section">
-              <div>
-                <strong>Test Sheet OCR</strong>
-                <span>Extract date, voltage, measured CCA and result</span>
-              </div>
-              <Select
-                value={ocrTest}
-                onChange={setOcrTest}
-                options={[
-                  { value: "first", label: "First Test" },
-                  { value: "second", label: "Second Test" },
-                ]}
-                disabled={busy || ocrBusy}
-                aria-label="Select test stage"
-              />
-              <AppButton
-                type="button"
-                className="secondary"
-                onClick={() => ocrInput.current?.click()}
-                loading={ocrBusy}
-                disabled={busy || ocrBusy || photos.test.length >= 8}
-              >
-                {!ocrBusy && <Camera size={17} />}
-                Scan Test Sheet
-              </AppButton>
-              <input
-                ref={ocrInput}
-                className="ocr-file-input"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(event) => scanTestSheet(event.target.files?.[0])}
-              />
-            </section>
             {photoGroup("Test Result Photos", "test")}
           </div>
           {error && (
