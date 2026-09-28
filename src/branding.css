@@ -1246,9 +1246,9 @@
   .workflow-modal .data-dialog .dialog-actions {
     position: sticky;
     z-index: 5;
-    bottom: -18px;
+    bottom: 0;
     margin: 20px -18px -18px;
-    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    padding: 12px 18px max(20px, calc(12px + env(safe-area-inset-bottom)));
     border-top: 1px solid var(--line);
     background: #fff;
     box-shadow: 0 -8px 18px rgb(23 33 38 / 8%);
@@ -1275,6 +1275,14 @@
     background: var(--blue);
     place-items: center;
     display: grid;
+  }
+
+  .warehouse-top-actions {
+    top: 0;
+    padding: 4px;
+    border-radius: 6px;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 2px 8px rgb(23 33 38 / 10%);
   }
 
   .warehouse-top-save:hover,
