@@ -431,6 +431,8 @@ const adminFieldNames = [
   "directReplacedSerialNo",
   "remarks1",
 ];
+const excludesReplacementItem = (result) => /return|reject/i.test(String(result || ""));
+
 export function AdminProcess({ claim, onClose, onSaved }) {
   const initialValues = Object.fromEntries(
     adminFieldNames.map((name) => [name, claim.admin?.[name] || ""]),
@@ -443,6 +445,11 @@ export function AdminProcess({ claim, onClose, onSaved }) {
   const [wanLookupLoading, setWanLookupLoading] = useState(false);
   const [wanMatches, setWanMatches] = useState([]);
   const [error, setError] = useState("");
+  const selectedResult = Form.useWatch("result", formApi);
+  const replacementItemExcluded = excludesReplacementItem(selectedResult);
+  useEffect(() => {
+    if (replacementItemExcluded) formApi.setFieldValue("replaceItem", "");
+  }, [formApi, replacementItemExcluded]);
   useEffect(() => {
     let active = true;
     api(`/api/claims/${claim.id}/attachments`)
@@ -464,7 +471,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
   function applyWanDetails(record) {
     formApi.setFieldsValue({
       wanNo: record.wanNo || "",
-      replaceItem: record.replaceItem || "",
+      replaceItem: replacementItemExcluded ? "" : record.replaceItem || "",
       replaceSerialNo: record.replaceSerialNo || "",
       settleDate: record.settleDate || "",
     });
@@ -519,6 +526,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
     try {
       setBusy(true);
       const data = formApi.getFieldsValue(true);
+      if (excludesReplacementItem(data.result)) data.replaceItem = "";
       const result = await api(`/api/claims/${claim.id}/admin`, {
         method: "PUT",
         body: JSON.stringify({ version: claim.version, action, data, files: attachments }),
@@ -671,7 +679,10 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           </div>
           <div className="admin-fields">
             {input("WAN No.", "wanNo")}
-            {input("Replace Item", "replaceItem")}
+            {input("Replace Item", "replaceItem", {
+              disabled: replacementItemExcluded,
+              placeholder: replacementItemExcluded ? "Not Applicable" : undefined,
+            })}
             {input("Replace Serial No.", "replaceSerialNo")}
             {input("Settle Date", "settleDate", { type: "date" })}
             <Form.Item
