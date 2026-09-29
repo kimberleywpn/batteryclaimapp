@@ -404,6 +404,7 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
           options={dealerOptions}
           selected={dealers}
           onChange={setDealers}
+          selectAll
         />
         {!salesUser && (
           <CheckFilter
@@ -411,6 +412,7 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
             options={agentOptions}
             selected={agents}
             onChange={setAgents}
+            selectAll
           />
         )}
         <CheckFilter
@@ -418,12 +420,14 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
           options={brandOptions}
           selected={brands}
           onChange={setBrands}
+          selectAll
         />
         <CheckFilter
           label="Process Result"
           options={resultOptions}
           selected={results}
           onChange={setResults}
+          selectAll
         />
         <AppButton className="clear-action" onClick={clear}>
           Clear Filters

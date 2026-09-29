@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   Button,
   Cascader,
+  Checkbox,
   DatePicker,
   Input,
   InputNumber,
@@ -103,8 +104,10 @@ function optionPaths(options, path = []) {
   );
 }
 
-export function CheckFilter({ label, options, selected, onChange }) {
+export function CheckFilter({ label, options, selected, onChange, selectAll = false }) {
   const paths = useMemo(() => optionPaths(options), [options]);
+  const allValues = useMemo(() => paths.map((path) => path.at(-1)), [paths]);
+  const selectedCount = allValues.filter((value) => selected.includes(value)).length;
   return (
     <Cascader
       className="app-filter-cascader"
@@ -118,6 +121,22 @@ export function CheckFilter({ label, options, selected, onChange }) {
       showSearch
       placeholder={`${label}: All`}
       showCheckedStrategy={Cascader.SHOW_CHILD}
+      popupRender={(menus) => (
+        <>
+          {selectAll && (
+            <div className="filter-select-all">
+              <Checkbox
+                checked={allValues.length > 0 && selectedCount === allValues.length}
+                indeterminate={selectedCount > 0 && selectedCount < allValues.length}
+                onChange={(event) => onChange(event.target.checked ? allValues : [])}
+              >
+                Select All
+              </Checkbox>
+            </div>
+          )}
+          {menus}
+        </>
+      )}
     />
   );
 }

@@ -527,24 +527,28 @@ export default function ReportPanel({ claims, onClose, onOpenClaim }) {
             options={dealerOptions}
             selected={dealers}
             onChange={setDealers}
+            selectAll
           />
           <CheckFilter
             label="Sales Agent"
             options={options("salesperson")}
             selected={agents}
             onChange={setAgents}
+            selectAll
           />
           <CheckFilter
             label="Brand"
             options={options("brand")}
             selected={brands}
             onChange={setBrands}
+            selectAll
           />
           <CheckFilter
             label="Process Result"
             options={resultOptions}
             selected={results}
             onChange={setResults}
+            selectAll
           />
           <AppButton className="clear-action" onClick={clear}>
             Clear Filters

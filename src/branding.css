@@ -811,6 +811,18 @@
   font-size: 0.9rem;
 }
 
+.filter-select-all {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 560px) {
+  .sales-workspace .sales-card .serial-link {
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+}
+
 .back-to-top {
   position: fixed;
   right: 22px;
