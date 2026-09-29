@@ -1630,3 +1630,7 @@
     grid-column: auto;
   }
 }
+
+#_r_b_ {
+  overflow: unset !important;
+}
