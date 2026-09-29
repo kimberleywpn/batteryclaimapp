@@ -802,6 +802,7 @@ function DeleteClaimDialog({ claim, onCancel, onDeleted }) {
   return (
     <Modal
       open
+      zIndex={1200}
       title="Delete Case?"
       okText="Delete Case"
       cancelText="Cancel"
@@ -853,6 +854,7 @@ function CancelClaimDialog({ claim, onClose, onCancelled }) {
   return (
     <Modal
       open
+      zIndex={1200}
       title="Cancel Claim?"
       okText="Cancel Claim"
       cancelText="Keep Claim"
