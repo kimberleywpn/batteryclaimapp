@@ -800,7 +800,8 @@
   font-weight: 600;
 }
 
-.sales-branch-code {
+.sales-branch-code,
+.claim-branch-code {
   margin-top: 4px;
   margin-left: 0;
 }
@@ -810,6 +811,14 @@
 .sales-card .case-agent {
   margin-top: 4px;
   font-size: 0.8rem;
+}
+
+.report-age-warning {
+  color: #ffcc00;
+}
+
+.report-age-critical {
+  color: #cc3300;
 }
 
 .sales-card .stage-title {

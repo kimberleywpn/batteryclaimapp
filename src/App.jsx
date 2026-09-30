@@ -177,7 +177,19 @@ function stageDetail(claim, view) {
     const days = daysSinceReport(claim.claimDate);
     return days === null
       ? "Report Date Not Recorded"
-      : `${days} Day${days === 1 ? "" : "s"} Since Report`;
+      : (
+          <span
+            className={
+              days > 21
+                ? "report-age report-age-critical"
+                : days > 14
+                  ? "report-age report-age-warning"
+                  : "report-age"
+            }
+          >
+            {days} Day{days === 1 ? "" : "s"} Since Report
+          </span>
+        );
   }
   if (view === "arrived") {
     const data = claim.warehouse || {};
@@ -1173,12 +1185,12 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                 </div>
               </div>
               <div className="claim-party">
-                <div className="customer">
-                  {c.customer || c.dealerName || "Customer Not Recorded"}
-                  {c.branchName && (
-                    <small className="branch-code">{c.branchName}</small>
-                  )}
-                </div>
+                <div className="customer">{c.customer || c.dealerName || "Customer Not Recorded"}</div>
+                {c.branchName && (
+                  <small className="branch-code claim-branch-code">
+                    {c.branchName}
+                  </small>
+                )}
                 <div className="case-area">{c.area || "Area Not Recorded"}</div>
                 <div className="case-agent">
                   {c.salesperson || "Sales Agent Not Recorded"}
