@@ -790,7 +790,7 @@
 
 /* Keep approval cards aligned with the main claims list. */
 .sales-card {
-  grid-template-columns: 1.2fr 0.9fr 1.5fr auto;
+  grid-template-columns: 0.95fr 1.3fr 1.5fr auto;
   gap: 24px;
   padding: 18px;
 }
@@ -798,6 +798,11 @@
 .sales-card .case-model,
 .sales-card .customer {
   font-weight: 600;
+}
+
+.sales-branch-code {
+  margin-top: 4px;
+  margin-left: 0;
 }
 
 .sales-card .secondary-text,

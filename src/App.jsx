@@ -720,12 +720,12 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
                   </div>
                 </div>
                 <div>
-                  <div className="customer">
-                    {shown(c.customer || c.dealerName)}
-                    {c.branchName && (
-                      <small className="branch-code">{c.branchName}</small>
-                    )}
-                  </div>
+                  <div className="customer">{shown(c.customer || c.dealerName)}</div>
+                  {c.branchName && (
+                    <small className="branch-code sales-branch-code">
+                      {c.branchName}
+                    </small>
+                  )}
                   <div className="case-area">{shown(c.area)}</div>
                   <div className="case-agent">{shown(c.salesperson)}</div>
                 </div>
