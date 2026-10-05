@@ -433,7 +433,7 @@ const adminFieldNames = [
 ];
 const excludesReplacementItem = (result) => /return|reject/i.test(String(result || ""));
 
-export function AdminProcess({ claim, onClose, onSaved }) {
+export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
   const initialValues = Object.fromEntries(
     adminFieldNames.map((name) => [name, claim.admin?.[name] || ""]),
   );
@@ -608,6 +608,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
         form={formApi}
         initialValues={initialValues}
         layout="vertical"
+        disabled={readOnly}
         autoComplete="off"
         noValidate
         onKeyDown={advanceFieldOnEnter}
@@ -621,7 +622,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           <X size={20} />
         </AppButton>
         <div className="panel-heading">
-          <span className="eyebrow">Admin Process</span>
+          <span className="eyebrow">{readOnly ? "Admin Process Preview" : "Admin Process"}</span>
           <h2>
             <span>{claim.serial}</span>
             <i aria-hidden="true" />
@@ -651,7 +652,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
             <span className="approval-state">
               Approval: <strong>{approvalStatus}</strong>
             </span>
-            {claim.status !== "complete" && (
+            {!readOnly && claim.status !== "complete" && (
               <AppButton
                 type="button"
                 className="primary"
@@ -665,18 +666,20 @@ export function AdminProcess({ claim, onClose, onSaved }) {
         </fieldset>
         <fieldset className="admin-section">
           <legend>Settlement</legend>
-          <div className="settlement-lookup-action">
-            <AppButton
-              type="button"
-              className="secondary"
-              loading={wanLookupLoading}
-              disabled={busy}
-              onClick={findWanDetails}
-            >
-              <SearchIcon size={16} />
-              {wanLookupLoading ? "Searching..." : "Lookup WAN Details"}
-            </AppButton>
-          </div>
+          {!readOnly && (
+            <div className="settlement-lookup-action">
+              <AppButton
+                type="button"
+                className="secondary"
+                loading={wanLookupLoading}
+                disabled={busy}
+                onClick={findWanDetails}
+              >
+                <SearchIcon size={16} />
+                {wanLookupLoading ? "Searching..." : "Lookup WAN Details"}
+              </AppButton>
+            </div>
+          )}
           <div className="admin-fields">
             {input("WAN No.", "wanNo")}
             {input("Replace Item", "replaceItem", {
@@ -775,6 +778,7 @@ export function AdminProcess({ claim, onClose, onSaved }) {
           <AntUpload
             accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx"
             multiple
+            disabled={readOnly}
             className="claim-photo-upload"
             listType="picture-card"
             fileList={attachmentFileList}
@@ -790,12 +794,12 @@ export function AdminProcess({ claim, onClose, onSaved }) {
               if (file.uid === files[0]?.uid) addAttachments(files);
               return AntUpload.LIST_IGNORE;
             }}
-            onRemove={(file) => {
+            onRemove={readOnly ? undefined : (file) => {
               setAttachments((current) => current.filter((item) => item.id !== file.uid));
               return false;
             }}
           >
-            {attachments.length < 8 && (
+            {!readOnly && attachments.length < 8 && (
               <AppButton type="button" className="ant-upload-trigger" disabled={attachmentLoading || busy}>
                 <Plus size={18} />
                 <span>Upload</span>
@@ -808,25 +812,27 @@ export function AdminProcess({ claim, onClose, onSaved }) {
         )}
         <div className="dialog-actions">
           <AppButton className="secondary" onClick={onClose}>
-            Cancel
+            {readOnly ? "Close" : "Cancel"}
           </AppButton>
-          <AppButton
-            className="primary"
-            loading={busy}
-            disabled={attachmentLoading}
-            onClick={() =>
-              save(
-                claim.status === "complete"
-                  ? "save-details"
-                  : settlement
-                    ? "draft"
-                    : "save-details",
-              )
-            }
-          >
-            Save Details
-          </AppButton>
-          {settlement && claim.status !== "complete" && (
+          {!readOnly && (
+            <AppButton
+              className="primary"
+              loading={busy}
+              disabled={attachmentLoading}
+              onClick={() =>
+                save(
+                  claim.status === "complete"
+                    ? "save-details"
+                    : settlement
+                      ? "draft"
+                      : "save-details",
+                )
+              }
+            >
+              Save Details
+            </AppButton>
+          )}
+          {!readOnly && settlement && claim.status !== "complete" && (
             <AppButton
               className="primary"
               loading={busy}

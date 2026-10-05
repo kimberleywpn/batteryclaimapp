@@ -789,6 +789,10 @@
 }
 
 /* Keep approval cards aligned with the main claims list. */
+.claim-card {
+  grid-template-columns: 0.95fr 1.3fr 1.5fr auto;
+}
+
 .sales-card {
   grid-template-columns: 0.95fr 1.3fr 1.5fr auto;
   gap: 24px;

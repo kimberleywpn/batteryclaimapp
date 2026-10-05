@@ -61,8 +61,10 @@ const pages = [
 const pagesForRole = (role) => {
   if (role === "manager") return pages.filter((item) => item.id === "dashboard");
   if (role === "sales") return pages.filter((item) => item.id !== "claims");
+  if (role === "warehouse_preview") return pages.filter((item) => item.id === "claims");
   return pages;
 };
+const roleLabel = (role) => role === "warehouse_preview" ? "Warehouse Preview" : role;
 
 function SignIn({ onSuccess }) {
   const [formApi] = Form.useForm();
@@ -955,6 +957,8 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
   const canManage = ["owner", "admin"].includes(session.role);
+  const canRunWarehouse = ["owner", "admin", "warehouse_preview"].includes(session.role);
+  const canViewAdminProcess = canRunWarehouse;
   const pageSize = 10;
   const counts = useMemo(
     () =>
@@ -1138,7 +1142,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
             ]}
           />
         </div>
-        {view === "reported" && canManage && (
+        {view === "reported" && canRunWarehouse && (
           <div className="bulk-receive-bar">
             <Checkbox
               checked={allVisibleSelected}
@@ -1160,7 +1164,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
         <div className="claim-list">
           {visible.map((c) => (
             <article className="claim-card" key={c.id}>
-              {view === "reported" && canManage && (
+              {view === "reported" && canRunWarehouse && (
                 <Checkbox
                   className="claim-select"
                   checked={selectedIds.includes(c.id)}
@@ -1202,7 +1206,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                   <div className="stage-next">{stageDetail(c, view)}</div>
                 </div>
               </div>
-              {canManage && c.status !== "cancelled" && (
+              {canRunWarehouse && c.status !== "cancelled" && (
                 <div className="row-actions">
                   <AppButton
                     className="secondary"
@@ -1210,12 +1214,14 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                   >
                     Warehouse Data
                   </AppButton>
-                  <AppButton
-                    className="secondary"
-                    onClick={() => setAdminClaim(c)}
-                  >
-                    Admin Process
-                  </AppButton>
+                  {canViewAdminProcess && (
+                    <AppButton
+                      className="secondary"
+                      onClick={() => setAdminClaim(c)}
+                    >
+                      {canManage ? "Admin Process" : "View Admin Process"}
+                    </AppButton>
+                  )}
                 </div>
               )}
             </article>
@@ -1262,6 +1268,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
       {adminClaim && (
         <AdminProcess
           claim={adminClaim}
+          readOnly={!canManage}
           onClose={() => setAdminClaim(null)}
           onSaved={onClaimSaved}
         />
@@ -1402,7 +1409,7 @@ function App() {
         </div>
         <div className="account">
           <span>
-            {session.name || session.username} <small>{session.role}</small>
+            {session.name || session.username} <small>{roleLabel(session.role)}</small>
           </span>
           <AppButton className="icon" onClick={signOut} title="Sign Out">
             <LogOut size={18} />
