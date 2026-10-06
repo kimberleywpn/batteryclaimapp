@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, DatePicker, Empty, Segmented, Spin, Statistic, Table, Tooltip } from "antd";
-import { Info } from "lucide-react";
+import { Download, Info } from "lucide-react";
 import dayjs from "dayjs";
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
@@ -10,6 +10,116 @@ import { brandName, stageLabel, titleCase } from "../utils/claimFormatting";
 const { RangePicker } = DatePicker;
 const dateValue = (value) => (value ? dayjs(value) : null);
 const claimSettleDate = (claim) => claim.admin?.settleDate || claim.settleDate || "";
+const daysSinceReport = (claim, today = dayjs()) => {
+  const reportDate = dayjs(claim.claimDate);
+  return reportDate.isValid()
+    ? Math.max(0, today.startOf("day").diff(reportDate.startOf("day"), "day"))
+    : null;
+};
+
+const dashboardExportColumns = [
+  ["Case ID", "id"],
+  ["Report Date", "claimDate"],
+  ["Days Since Report", "daysSinceReport"],
+  ["Stage", "status"],
+  ["Process Result", "result"],
+  ["Dealer", "dealer"],
+  ["Branch Code", "branchCode"],
+  ["Sales Agent", "salesperson"],
+  ["Brand", "brand"],
+  ["Battery Model", "model"],
+  ["Serial Number", "serial"],
+  ["Customer", "customer"],
+  ["Battery Batch / Code", "batchCode"],
+  ["Production Date", "productDate"],
+  ["Factory", "factory"],
+  ["First Test Date", "firstTestDate"],
+  ["Pre-charge OCV (V)", "preOcv"],
+  ["Pre-charge CCA", "preCca"],
+  ["Pre-charge Result", "preResult"],
+  ["Second Test Date", "secondTestDate"],
+  ["After-charge OCV (V)", "postOcv"],
+  ["After-charge CCA", "postCca"],
+  ["After-charge Result", "postResult"],
+  ["WAN No.", "wanNo"],
+  ["Replacement Item", "replaceItem"],
+  ["Replacement Serial No.", "replaceSerialNo"],
+  ["Settle Date", "settleDate"],
+];
+
+const exportRow = (claim) => {
+  const warehouse = claim.warehouse || {};
+  const admin = claim.admin || {};
+  const days = daysSinceReport(claim);
+  return {
+    id: claim.id || "",
+    claimDate: claim.claimDate || "",
+    daysSinceReport: days === null ? "" : days,
+    status: stageLabel(claim.status),
+    result: admin.result || "",
+    dealer: claim.dealerName || claim.customer || "",
+    branchCode: claim.branchName || "",
+    salesperson: claim.salesperson || "",
+    brand: brandName(claim.itemGroup),
+    model: claim.model || "",
+    serial: claim.serial || "",
+    customer: claim.customer || "",
+    batchCode: warehouse.batchCode || "",
+    productDate: warehouse.productDate || "",
+    factory: warehouse.factory || "",
+    firstTestDate: warehouse.firstTestDate || "",
+    preOcv: warehouse.preOcv || "",
+    preCca: warehouse.preCca || "",
+    preResult: warehouse.preResult || "",
+    secondTestDate: warehouse.secondTestDate || "",
+    postOcv: warehouse.postOcv || "",
+    postCca: warehouse.postCca || "",
+    postResult: warehouse.postResult || warehouse.result || "",
+    wanNo: admin.wanNo || "",
+    replaceItem: admin.replaceItem || admin.replaceBrand || "",
+    replaceSerialNo: admin.replaceSerialNo || "",
+    settleDate: admin.settleDate || claim.settleDate || "",
+  };
+};
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function downloadDashboardExport(claims, summaryRows) {
+  const XLSX = await import("xlsx");
+  const rows = claims.map(exportRow);
+  const caseSheet = XLSX.utils.aoa_to_sheet([
+    dashboardExportColumns.map(([label]) => label),
+    ...rows.map((row) => dashboardExportColumns.map(([, key]) => row[key])),
+  ]);
+  caseSheet["!autofilter"] = { ref: caseSheet["!ref"] };
+  caseSheet["!cols"] = dashboardExportColumns.map(([label, key]) => ({
+    wch: Math.min(
+      28,
+      Math.max(label.length + 2, ...rows.slice(0, 250).map((row) => String(row[key] || "").length + 2)),
+    ),
+  }));
+  const summarySheet = XLSX.utils.aoa_to_sheet([
+    ["Management Dashboard Export", ""],
+    ...summaryRows,
+  ]);
+  summarySheet["!cols"] = [{ wch: 25 }, { wch: 42 }];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+  XLSX.utils.book_append_sheet(workbook, caseSheet, "Cases");
+  downloadBlob(
+    new Blob([XLSX.write(workbook, { bookType: "xlsx", type: "array" })], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    `battery-claims-dashboard-${dayjs().format("DD-MM-YYYY")}.xlsx`,
+  );
+}
 
 const localDay = (date) => {
   const offset = date.getTimezoneOffset();
@@ -75,6 +185,8 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
   const [casePage, setCasePage] = useState(1);
   const [selection, setSelection] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const salesUser = session.role === "sales";
   useEffect(() => {
     let active = true;
@@ -152,6 +264,27 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
             results.includes(titleCase(c.admin?.result) || "Not Recorded")),
       ),
     [dashboardClaims, results],
+  );
+  const ageingClaims = useMemo(
+    () =>
+      claims.filter(
+        (claim) =>
+          !["complete", "cancelled"].includes(claim.status) &&
+          matches(claim) &&
+          daysSinceReport(claim) !== null,
+      ),
+    [claims, dealers, agents, brands],
+  );
+  const ageing = useMemo(
+    () => ({
+      current: ageingClaims.filter((claim) => daysSinceReport(claim) <= 14),
+      warning: ageingClaims.filter((claim) => {
+        const days = daysSinceReport(claim);
+        return days > 14 && days <= 21;
+      }),
+      critical: ageingClaims.filter((claim) => daysSinceReport(claim) > 21),
+    }),
+    [ageingClaims],
   );
   const completed = filteredClaims.filter((c) => c.status === "complete");
   const filteredSales = sales.filter(matches);
@@ -294,9 +427,36 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
         : key === "brand"
           ? brandName(claim.itemGroup)
           : claim[key] || "Not Recorded";
-  const selectedClaims = filteredClaims.filter(
-    (c) => !selection || claimValue(c, selection.key) === selection.value,
-  );
+  const selectedClaims =
+    selection?.type === "ageing"
+      ? ageing[selection.bucket]
+      : filteredClaims.filter(
+          (c) => !selection || claimValue(c, selection.key) === selection.value,
+        );
+  const exportCases = async () => {
+    setExportError("");
+    setExporting(true);
+    try {
+      const ageingLabel =
+        selection?.type === "ageing"
+          ? selection.bucket === "critical"
+            ? "Over 21 Days"
+            : selection.bucket === "warning"
+              ? "15-21 Days"
+              : "Within 14 Days"
+          : "All Matching Cases";
+      await downloadDashboardExport(selectedClaims, [
+        ["Exported Cases", selectedClaims.length],
+        ["Report Period", `${from || "Any"} to ${to || "Any"}`],
+        ["Case Selection", ageingLabel],
+        ["Generated", dayjs().format("DD-MM-YYYY HH:mm")],
+      ]);
+    } catch (exportFailure) {
+      setExportError(exportFailure.message || "The Excel export could not be created.");
+    } finally {
+      setExporting(false);
+    }
+  };
   const visibleSales = salesRows.slice((salesPage - 1) * 10, salesPage * 10),
     visibleCases = selectedClaims.slice((casePage - 1) * 10, casePage * 10);
   useEffect(() => {
@@ -377,6 +537,14 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       dataIndex: "status",
       render: (value) => stageLabel(value),
     },
+    {
+      title: "Days Since Report",
+      key: "ageing",
+      render: (_, claim) => {
+        const days = daysSinceReport(claim);
+        return days === null ? "Not Recorded" : `${days} day${days === 1 ? "" : "s"}`;
+      },
+    },
   ];
   return (
     <>
@@ -435,6 +603,9 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       </section>
       {error && (
         <Alert className="app-alert" type="error" showIcon message={error} />
+      )}
+      {exportError && (
+        <Alert className="app-alert" type="error" showIcon message={exportError} />
       )}
       {!loading && !error && (
         <section className="dashboard-visuals">
@@ -509,6 +680,35 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
           </article>
         </section>
       )}
+      <section className="surface dashboard-ageing">
+        <div className="section-title">
+          <div>
+            <h2>Active Case Ageing</h2>
+            <p>Days since report date. Dealer, agent and brand filters apply.</p>
+          </div>
+        </div>
+        <div className="ageing-cards">
+          {[
+            ["current", "Within 14 Days", "current"],
+            ["warning", "15-21 Days", "warning"],
+            ["critical", "Over 21 Days", "critical"],
+          ].map(([bucket, label, tone]) => (
+            <button
+              type="button"
+              className={`ageing-card ${tone}${selection?.type === "ageing" && selection.bucket === bucket ? " active" : ""}`}
+              key={bucket}
+              onClick={() => {
+                setSelection({ type: "ageing", bucket });
+                setCasePage(1);
+              }}
+            >
+              <strong>{ageing[bucket].length.toLocaleString()}</strong>
+              <span>{label}</span>
+              <small>View Cases</small>
+            </button>
+          ))}
+        </div>
+      </section>
       <section className="surface dashboard-sales">
         <div className="section-title">
           <h2>Battery Sales &amp; Claim Rate</h2>
@@ -597,15 +797,30 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       </section>
       <section className="surface dashboard-cases">
         <div className="section-title">
-          <h2>Cases</h2>
-          {selection && (
+          <h2>
+            {selection?.type === "ageing"
+              ? selection.bucket === "critical"
+                ? "Cases Over 21 Days"
+                : selection.bucket === "warning"
+                  ? "Cases 15-21 Days"
+                  : "Cases Within 14 Days"
+              : "Cases"}
+          </h2>
+          <div className="dashboard-case-actions">
+            {selection && (
+              <AppButton className="clear-action" onClick={() => setSelection(null)}>
+                Clear Selection
+              </AppButton>
+            )}
             <AppButton
-              className="clear-action"
-              onClick={() => setSelection(null)}
+              className="secondary dashboard-export"
+              onClick={exportCases}
+              disabled={exporting || !selectedClaims.length}
             >
-              Clear Selection
+              <Download size={16} />
+              {exporting ? "Preparing..." : "Export Excel"}
             </AppButton>
-          )}
+          </div>
         </div>
         <p>{selectedClaims.length.toLocaleString()} Matching Cases</p>
         <div className="dashboard-table ant-dashboard-table">
