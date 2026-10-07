@@ -512,14 +512,24 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
       return;
     }
     const data = formApi.getFieldsValue(true);
-    const requiredFields = [["result", "Result"]];
-    if (action === "complete") requiredFields.push(["settleDate", "Settle Date"]);
-    const missing = missingRequiredFields(data, requiredFields);
+    const missing = [];
+    if (action === "submit") {
+      const warehouseMissing = missingRequiredFields(claim.warehouse || {}, warehouseRequiredFields);
+      if (warehouseMissing.length) {
+        missing.push(`Warehouse Data: ${warehouseMissing.map(([, label]) => label).join(", ")}`);
+      }
+      if (isBlank(data.result)) missing.push("Result");
+    }
+    if (action === "complete") {
+      if (isBlank(data.result)) missing.push("Result");
+      if (isBlank(data.settleDate)) missing.push("Settle Date");
+    }
     if (missing.length) {
-      formApi.setFields(
-        missing.map(([name, label]) => ({ name, errors: [`Enter ${label}.`] })),
-      );
-      setError(`Cannot Save Admin Details. Complete: ${missing.map(([, label]) => label).join(", ")}.`);
+      const formErrors = [];
+      if (missing.includes("Result")) formErrors.push({ name: "result", errors: ["Select A Result."] });
+      if (missing.includes("Settle Date")) formErrors.push({ name: "settleDate", errors: ["Enter Settle Date."] });
+      if (formErrors.length) formApi.setFields(formErrors);
+      setError(`${action === "submit" ? "Cannot Send For Approval" : "Cannot Complete Claim"}. Complete: ${missing.join("; ")}.`);
       return;
     }
     try {
@@ -821,9 +831,7 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
                 save(
                   claim.status === "complete"
                     ? "save-details"
-                    : settlement
-                      ? "draft"
-                      : "save-details",
+                    : "save-details",
                 )
               }
             >
@@ -1076,18 +1084,10 @@ export function WarehouseData({ claim, onClose, onSaved }) {
     message.success("Test Sheet Applied");
   }
   async function submit() {
+    setBusy(true);
     setError("");
     const data = formApi.getFieldsValue(true);
-    const missing = missingRequiredFields(data, warehouseRequiredFields);
-    if (missing.length) {
-      formApi.setFields(
-        missing.map(([name, label]) => ({ name, errors: [`Enter ${label}.`] })),
-      );
-      setError(`Cannot Save Warehouse Data. Complete: ${missing.map(([, label]) => label).join(", ")}.`);
-      return;
-    }
     try {
-      setBusy(true);
       const result = await api(`/api/claims/${claim.id}/warehouse`, {
         method: "PUT",
         body: JSON.stringify({
