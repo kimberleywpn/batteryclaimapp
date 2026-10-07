@@ -518,7 +518,6 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
       if (warehouseMissing.length) {
         missing.push(`Warehouse Data: ${warehouseMissing.map(([, label]) => label).join(", ")}`);
       }
-      if (isBlank(data.result)) missing.push("Result");
     }
     if (action === "complete") {
       if (isBlank(data.result)) missing.push("Result");
@@ -647,7 +646,6 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
             <Form.Item
               label="Result"
               name="result"
-              rules={[{ required: true, message: "Select A Result." }]}
             >
               <Select
                 className="form-select"
@@ -910,13 +908,7 @@ const warehouseFieldNames = [
 const warehouseRequiredFields = [
   ["receivedDate", "Date Received"],
   ["firstTestDate", "First Test Date"],
-  ["preOcv", "Pre-charge OCV"],
-  ["preCca", "Pre-charge CCA"],
-  ["preResult", "Pre-charge Result"],
   ["secondTestDate", "Second Test Date"],
-  ["postOcv", "After-charge OCV"],
-  ["postCca", "After-charge CCA"],
-  ["postResult", "After-charge Result"],
 ];
 const isBlank = (value) => value === undefined || value === null || String(value).trim() === "";
 const missingRequiredFields = (data, fields) =>

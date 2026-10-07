@@ -45,11 +45,11 @@ import { api, setAuthToken } from "./api";
 import { AppButton, AppPagination, SearchInput } from "./components/AppControls";
 import StatusTabs from "./components/StatusTabs";
 import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features/WorkflowForms";
+import MobileCodeScanner from "./components/MobileCodeScanner";
 import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } from "./utils/claimFormatting";
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
 const ReportPanel = lazy(() => import("./features/ReportPanel"));
-const MobileCodeScanner = lazy(() => import("./components/MobileCodeScanner"));
 const brandLogo = `${import.meta.env.BASE_URL}kai-shen-logo.svg`;
 
 const pages = [
@@ -962,7 +962,6 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
   const canViewAdminProcess = canRunWarehouse;
   const pageSize = 10;
   useEffect(() => {
-    import("./components/MobileCodeScanner");
     import("@zxing/browser");
   }, []);
   const counts = useMemo(
@@ -1114,16 +1113,14 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
           </div>
         </div>
         {scannerOpen && (
-          <Suspense fallback={null}>
-            <MobileCodeScanner
-              open={scannerOpen}
-              onClose={() => setScannerOpen(false)}
-              onScanned={(value) => {
-                setQuery(value);
-                setPage(1);
-              }}
-            />
-          </Suspense>
+          <MobileCodeScanner
+            open={scannerOpen}
+            onClose={() => setScannerOpen(false)}
+            onScanned={(value) => {
+              setQuery(value);
+              setPage(1);
+            }}
+          />
         )}
         <div className="progress-subfilters-react claims-filter-row">
           {!!subfilters.length && (
