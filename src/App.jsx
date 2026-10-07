@@ -961,6 +961,10 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
   const canRunWarehouse = ["owner", "admin", "warehouse_preview"].includes(session.role);
   const canViewAdminProcess = canRunWarehouse;
   const pageSize = 10;
+  useEffect(() => {
+    import("./components/MobileCodeScanner");
+    import("@zxing/browser");
+  }, []);
   const counts = useMemo(
     () =>
       Object.fromEntries(
@@ -1092,11 +1096,11 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
             }))}
           />
           <div className="workspace-list-actions">
-            <Tooltip title="Scan QR Code Or Barcode">
+            <Tooltip title="Scan Code 39 Barcode">
               <AppButton
                 className="secondary mobile-scan-button"
                 icon={<ScanLine size={18} />}
-                aria-label="Scan QR Code Or Barcode"
+                aria-label="Scan Code 39 Barcode"
                 onClick={() => setScannerOpen(true)}
               />
             </Tooltip>
