@@ -633,20 +633,6 @@
   font-size: 0.72rem;
 }
 
-.case-checklist {
-  display: flex;
-  gap: 5px;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.35;
-}
-
-.case-checklist strong {
-  color: var(--ink);
-  flex: none;
-}
-
 .dashboard-ageing {
   margin-bottom: 16px;
   padding: 18px;

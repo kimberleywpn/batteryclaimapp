@@ -511,21 +511,19 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
       setError("Wait For Supporting Documents To Finish Loading.");
       return;
     }
-    if (action === "submit" && !formApi.getFieldValue("result")) {
-      formApi.setFields([
-        { name: "result", errors: ["Select A Result Before Sending."] },
-      ]);
-      return;
-    }
-    if (action === "complete" && !formApi.getFieldValue("settleDate")) {
-      formApi.setFields([
-        { name: "settleDate", errors: ["Enter Settle Date."] },
-      ]);
+    const data = formApi.getFieldsValue(true);
+    const requiredFields = [["result", "Result"]];
+    if (action === "complete") requiredFields.push(["settleDate", "Settle Date"]);
+    const missing = missingRequiredFields(data, requiredFields);
+    if (missing.length) {
+      formApi.setFields(
+        missing.map(([name, label]) => ({ name, errors: [`Enter ${label}.`] })),
+      );
+      setError(`Cannot Save Admin Details. Complete: ${missing.map(([, label]) => label).join(", ")}.`);
       return;
     }
     try {
       setBusy(true);
-      const data = formApi.getFieldsValue(true);
       if (excludesReplacementItem(data.result)) data.replaceItem = "";
       const result = await api(`/api/claims/${claim.id}/admin`, {
         method: "PUT",
@@ -901,6 +899,20 @@ const warehouseFieldNames = [
   "result",
   "factory",
 ];
+const warehouseRequiredFields = [
+  ["receivedDate", "Date Received"],
+  ["firstTestDate", "First Test Date"],
+  ["preOcv", "Pre-charge OCV"],
+  ["preCca", "Pre-charge CCA"],
+  ["preResult", "Pre-charge Result"],
+  ["secondTestDate", "Second Test Date"],
+  ["postOcv", "After-charge OCV"],
+  ["postCca", "After-charge CCA"],
+  ["postResult", "After-charge Result"],
+];
+const isBlank = (value) => value === undefined || value === null || String(value).trim() === "";
+const missingRequiredFields = (data, fields) =>
+  fields.filter(([name]) => isBlank(data[name]));
 const fileAsPhoto = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1064,10 +1076,18 @@ export function WarehouseData({ claim, onClose, onSaved }) {
     message.success("Test Sheet Applied");
   }
   async function submit() {
-    setBusy(true);
     setError("");
     const data = formApi.getFieldsValue(true);
+    const missing = missingRequiredFields(data, warehouseRequiredFields);
+    if (missing.length) {
+      formApi.setFields(
+        missing.map(([name, label]) => ({ name, errors: [`Enter ${label}.`] })),
+      );
+      setError(`Cannot Save Warehouse Data. Complete: ${missing.map(([, label]) => label).join(", ")}.`);
+      return;
+    }
     try {
+      setBusy(true);
       const result = await api(`/api/claims/${claim.id}/warehouse`, {
         method: "PUT",
         body: JSON.stringify({

@@ -66,41 +66,6 @@ const pagesForRole = (role) => {
 };
 const roleLabel = (role) => role === "warehouse_preview" ? "Warehouse Preview" : role;
 
-const incompleteTestFields = (test, labels) =>
-  labels
-    .filter(([field]) => !test[field])
-    .map(([, label]) => label);
-
-function workflowChecklist(claim) {
-  if (["complete", "cancelled"].includes(claim.status)) return [];
-  const warehouse = claim.warehouse || {};
-  const admin = claim.admin || {};
-  const missing = [];
-
-  if (!warehouse.receivedDate) missing.push("Date Received");
-  if (claim.status !== "reported") {
-    const first = incompleteTestFields(warehouse, [
-      ["firstTestDate", "date"],
-      ["preOcv", "OCV"],
-      ["preCca", "CCA"],
-      ["preResult", "result"],
-    ]);
-    const second = incompleteTestFields(warehouse, [
-      ["secondTestDate", "date"],
-      ["postOcv", "OCV"],
-      ["postCca", "CCA"],
-      ["postResult", "result"],
-    ]);
-    if (first.length) missing.push(`First Test: ${first.join(", ")}`);
-    if (second.length) missing.push(`Second Test: ${second.join(", ")}`);
-  }
-  if (["admin", "sales", "settlement"].includes(claim.status) && !admin.result)
-    missing.push("Admin Result");
-  if (claim.status === "settlement" && !admin.settleDate)
-    missing.push("Settle Date");
-  return missing;
-}
-
 function SignIn({ onSuccess }) {
   const [formApi] = Form.useForm();
   const [error, setError] = useState("");
@@ -585,6 +550,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
               ["Battery Model", claim.model],
               ["Brand", claim.itemGroup],
               ["Item Description", claim.itemDescription],
+              ["Case No.", claim.caseNumber || claim.id],
             ]}
           />
         </div>
@@ -1197,9 +1163,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
           </div>
         )}
         <div className="claim-list">
-          {visible.map((c) => {
-            const checklist = workflowChecklist(c);
-            return (
+          {visible.map((c) => (
               <article className="claim-card" key={c.id}>
               {view === "reported" && canRunWarehouse && (
                 <Checkbox
@@ -1241,12 +1205,6 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                 <div>
                   <div className="stage-title">{stageLabel(c.status)}</div>
                   <div className="stage-next">{stageDetail(c, view)}</div>
-                  {checklist.length > 0 && (
-                    <div className="case-checklist" aria-label="Required fields">
-                      <strong>Missing:</strong>
-                      <span>{checklist.join(" · ")}</span>
-                    </div>
-                  )}
                 </div>
               </div>
               {canRunWarehouse && c.status !== "cancelled" && (
@@ -1268,8 +1226,7 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                 </div>
               )}
               </article>
-            );
-          })}
+          ))}
         </div>
         {!visible.length && (
           <div className="empty">
