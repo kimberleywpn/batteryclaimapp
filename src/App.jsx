@@ -1206,6 +1206,11 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
                 <div>
                   <div className="stage-title">{stageLabel(c.status)}</div>
                   <div className="stage-next">{stageDetail(c, view)}</div>
+                  {["admin", "settlement"].includes(c.status) && c.admin?.pendingReason && (
+                    <div className="stage-pending-reason">
+                      Pending: {c.admin.pendingReason}
+                    </div>
+                  )}
                 </div>
               </div>
               {canRunWarehouse && c.status !== "cancelled" && (

@@ -1752,3 +1752,13 @@
 .ant-select-content {
   overflow: unset !important;
 }
+
+.stage-pending-reason {
+  color: #8a5a00;
+  margin-top: 5px;
+  max-width: 28rem;
+  overflow-wrap: anywhere;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
