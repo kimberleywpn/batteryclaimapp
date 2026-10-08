@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, DatePicker, Empty, Segmented, Spin, Statistic, Table, Tooltip } from "antd";
+import { Alert, DatePicker, Empty, Segmented, Spin, Table, Tooltip } from "antd";
 import { Download, Info } from "lucide-react";
 import dayjs from "dayjs";
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
