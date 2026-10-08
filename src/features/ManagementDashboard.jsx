@@ -10,17 +10,10 @@ import { brandName, stageLabel, titleCase } from "../utils/claimFormatting";
 const { RangePicker } = DatePicker;
 const dateValue = (value) => (value ? dayjs(value) : null);
 const claimSettleDate = (claim) => claim.admin?.settleDate || claim.settleDate || "";
-const daysSinceReport = (claim, today = dayjs()) => {
-  const reportDate = dayjs(claim.claimDate);
-  return reportDate.isValid()
-    ? Math.max(0, today.startOf("day").diff(reportDate.startOf("day"), "day"))
-    : null;
-};
 
 const dashboardExportColumns = [
   ["Case ID", "id"],
   ["Report Date", "claimDate"],
-  ["Days Since Report", "daysSinceReport"],
   ["Stage", "status"],
   ["Process Result", "result"],
   ["Dealer", "dealer"],
@@ -50,11 +43,9 @@ const dashboardExportColumns = [
 const exportRow = (claim) => {
   const warehouse = claim.warehouse || {};
   const admin = claim.admin || {};
-  const days = daysSinceReport(claim);
   return {
     id: claim.id || "",
     claimDate: claim.claimDate || "",
-    daysSinceReport: days === null ? "" : days,
     status: stageLabel(claim.status),
     result: admin.result || "",
     dealer: claim.dealerName || claim.customer || "",
@@ -265,27 +256,6 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       ),
     [dashboardClaims, results],
   );
-  const ageingClaims = useMemo(
-    () =>
-      claims.filter(
-        (claim) =>
-          !["complete", "cancelled"].includes(claim.status) &&
-          matches(claim) &&
-          daysSinceReport(claim) !== null,
-      ),
-    [claims, dealers, agents, brands],
-  );
-  const ageing = useMemo(
-    () => ({
-      current: ageingClaims.filter((claim) => daysSinceReport(claim) <= 14),
-      warning: ageingClaims.filter((claim) => {
-        const days = daysSinceReport(claim);
-        return days > 14 && days <= 21;
-      }),
-      critical: ageingClaims.filter((claim) => daysSinceReport(claim) > 21),
-    }),
-    [ageingClaims],
-  );
   const completed = filteredClaims.filter((c) => c.status === "complete");
   const filteredSales = sales.filter(matches);
   const salesRows = useMemo(() => {
@@ -427,28 +397,17 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
         : key === "brand"
           ? brandName(claim.itemGroup)
           : claim[key] || "Not Recorded";
-  const selectedClaims =
-    selection?.type === "ageing"
-      ? ageing[selection.bucket]
-      : filteredClaims.filter(
-          (c) => !selection || claimValue(c, selection.key) === selection.value,
-        );
+  const selectedClaims = filteredClaims.filter(
+    (c) => !selection || claimValue(c, selection.key) === selection.value,
+  );
   const exportCases = async () => {
     setExportError("");
     setExporting(true);
     try {
-      const ageingLabel =
-        selection?.type === "ageing"
-          ? selection.bucket === "critical"
-            ? "Over 21 Days"
-            : selection.bucket === "warning"
-              ? "15-21 Days"
-              : "Within 14 Days"
-          : "All Matching Cases";
       await downloadDashboardExport(selectedClaims, [
         ["Exported Cases", selectedClaims.length],
         ["Report Period", `${from || "Any"} to ${to || "Any"}`],
-        ["Case Selection", ageingLabel],
+        ["Case Selection", selection ? "Filtered Selection" : "All Matching Cases"],
         ["Generated", dayjs().format("DD-MM-YYYY HH:mm")],
       ]);
     } catch (exportFailure) {
@@ -536,14 +495,6 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       title: "Status",
       dataIndex: "status",
       render: (value) => stageLabel(value),
-    },
-    {
-      title: "Days Since Report",
-      key: "ageing",
-      render: (_, claim) => {
-        const days = daysSinceReport(claim);
-        return days === null ? "Not Recorded" : `${days} day${days === 1 ? "" : "s"}`;
-      },
     },
   ];
   return (
@@ -680,35 +631,6 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
           </article>
         </section>
       )}
-      <section className="surface dashboard-ageing">
-        <div className="section-title">
-          <div>
-            <h2>Active Case Ageing</h2>
-            <p>Days since report date. Dealer, agent and brand filters apply.</p>
-          </div>
-        </div>
-        <div className="ageing-cards">
-          {[
-            ["current", "Within 14 Days", "current"],
-            ["warning", "15-21 Days", "warning"],
-            ["critical", "Over 21 Days", "critical"],
-          ].map(([bucket, label, tone]) => (
-            <button
-              type="button"
-              className={`ageing-card ${tone}${selection?.type === "ageing" && selection.bucket === bucket ? " active" : ""}`}
-              key={bucket}
-              onClick={() => {
-                setSelection({ type: "ageing", bucket });
-                setCasePage(1);
-              }}
-            >
-              <strong>{ageing[bucket].length.toLocaleString()}</strong>
-              <span>{label}</span>
-              <small>View Cases</small>
-            </button>
-          ))}
-        </div>
-      </section>
       <section className="surface dashboard-sales">
         <div className="section-title">
           <h2>Battery Sales &amp; Claim Rate</h2>
@@ -797,15 +719,7 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       </section>
       <section className="surface dashboard-cases">
         <div className="section-title">
-          <h2>
-            {selection?.type === "ageing"
-              ? selection.bucket === "critical"
-                ? "Cases Over 21 Days"
-                : selection.bucket === "warning"
-                  ? "Cases 15-21 Days"
-                  : "Cases Within 14 Days"
-              : "Cases"}
-          </h2>
+          <h2>Cases</h2>
           <div className="dashboard-case-actions">
             {selection && (
               <AppButton className="clear-action" onClick={() => setSelection(null)}>

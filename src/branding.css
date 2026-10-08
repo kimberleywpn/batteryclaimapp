@@ -633,74 +633,6 @@
   font-size: 0.72rem;
 }
 
-.dashboard-ageing {
-  margin-bottom: 16px;
-  padding: 18px;
-}
-
-.dashboard-ageing .section-title {
-  margin-bottom: 12px;
-}
-
-.dashboard-ageing .section-title p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.74rem;
-}
-
-.ageing-cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.ageing-card {
-  min-height: 94px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--blue);
-  border-radius: 5px;
-  background: #fff;
-  color: var(--ink);
-  padding: 12px;
-  text-align: left;
-}
-
-.ageing-card:hover,
-.ageing-card.active {
-  background: var(--blue-soft);
-}
-
-.ageing-card strong,
-.ageing-card span,
-.ageing-card small {
-  display: block;
-}
-
-.ageing-card strong {
-  font-size: 1.45rem;
-  line-height: 1;
-}
-
-.ageing-card span {
-  margin-top: 6px;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.ageing-card small {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 0.72rem;
-}
-
-.ageing-card.warning {
-  border-left-color: #ffcc00;
-}
-
-.ageing-card.critical {
-  border-left-color: #cc3300;
-}
-
 .dashboard-case-actions {
   display: flex;
   align-items: center;
@@ -759,10 +691,6 @@
 
   .dashboard-chart {
     padding: 14px 10px;
-  }
-
-  .ageing-cards {
-    grid-template-columns: 1fr;
   }
 
   .dashboard-case-actions {
