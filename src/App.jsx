@@ -46,6 +46,7 @@ import { AppButton, AppPagination, SearchInput } from "./components/AppControls"
 import StatusTabs from "./components/StatusTabs";
 import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features/WorkflowForms";
 import MobileCodeScanner from "./components/MobileCodeScanner";
+import NotifySalesperson from "./features/NotifySalesperson";
 import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } from "./utils/claimFormatting";
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
@@ -623,7 +624,7 @@ const salesViews = [
   { id: "history", label: "Review History" },
 ];
 function SalesApprovals({ claims, onClaimSaved, session }) {
-  const [view, setView] = useState("progress");
+  const [view, setView] = useState(() => new URLSearchParams(window.location.search).get("view") === "pending" ? "pending" : "progress");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [preview, setPreview] = useState(null);
@@ -701,13 +702,16 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
               count: categories[item.id].length,
             }))}
           />
-          <SearchInput
-            className="app-search-input workspace-search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search Claim Or Salesperson"
-            allowClear
-          />
+          <div className="sales-toolbar-actions">
+            <SearchInput
+              className="app-search-input workspace-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search Claim Or Salesperson"
+              allowClear
+            />
+            {["owner", "admin"].includes(session.role) && <NotifySalesperson claims={claims} session={session} />}
+          </div>
         </div>
         <div className="sales-list">
           {visible.map((c) => {
@@ -1342,7 +1346,9 @@ function App() {
   async function load(user) {
     setSession(user);
     if (!user) return;
-    setPage(pagesForRole(user.role)[0].id);
+    const requestedPage = new URLSearchParams(window.location.search).get("page");
+    const allowedPages = pagesForRole(user.role);
+    setPage(allowedPages.some((item) => item.id === requestedPage) ? requestedPage : allowedPages[0].id);
     try {
       setClaims((await api("/api/claims")).claims || []);
     } catch (err) {
@@ -1493,3 +1499,4 @@ function App() {
 }
 
 export default App;
+
