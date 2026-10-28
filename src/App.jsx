@@ -47,6 +47,7 @@ import StatusTabs from "./components/StatusTabs";
 import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features/WorkflowForms";
 import MobileCodeScanner from "./components/MobileCodeScanner";
 import NotifySalesperson from "./features/NotifySalesperson";
+import BulkApprovalDialog from "./features/BulkApprovalDialog";
 import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } from "./utils/claimFormatting";
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
@@ -629,8 +630,13 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
   const [page, setPage] = useState(1);
   const [preview, setPreview] = useState(null);
   const [review, setReview] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkClaims, setBulkClaims] = useState(null);
   const pageSize = 10;
   const canApprove = ["owner", "sales"].includes(session.role);
+  const canApproveClaim = (claim) => session.role === "owner" || (
+    session.role === "sales" && String(session.agent || "").toLowerCase() === String(claim.salesperson || "").toLowerCase()
+  );
   const categories = useMemo(
     () => ({
       progress: claims.filter((c) =>
@@ -658,8 +664,13 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
     );
   }, [categories, view, query]);
   useEffect(() => setPage(1), [view, query]);
+  useEffect(() => setSelectedIds([]), [view, query]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  useEffect(() => setPage((current) => Math.min(current, pageCount)), [pageCount]);
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const selectedClaims = categories.pending.filter((claim) => selectedIds.includes(claim.id) && canApproveClaim(claim));
+  const selectableVisible = view === "pending" && canApprove ? visible.filter(canApproveClaim) : [];
+  const allVisibleSelected = selectableVisible.length > 0 && selectableVisible.every((claim) => selectedIds.includes(claim.id));
   const metric = (value, label, tone) => (
     <article>
       <span className={`approval-dot ${tone}`} />
@@ -713,6 +724,22 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
             {["owner", "admin"].includes(session.role) && <NotifySalesperson claims={claims} session={session} />}
           </div>
         </div>
+        {view === "pending" && canApprove && (
+          <div className="sales-bulk-bar">
+            <Checkbox
+              checked={allVisibleSelected}
+              indeterminate={!allVisibleSelected && selectableVisible.some((claim) => selectedIds.includes(claim.id))}
+              disabled={!selectableVisible.length}
+              onChange={(event) => {
+                const ids = selectableVisible.map((claim) => claim.id);
+                setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...ids])] : current.filter((id) => !ids.includes(id)));
+              }}
+            >Select This Page</Checkbox>
+            <span>{selectedClaims.length} Selected</span>
+            {selectedClaims.length > 0 && <AppButton type="text" onClick={() => setSelectedIds([])}>Clear</AppButton>}
+            <AppButton className="primary" disabled={!selectedClaims.length} onClick={() => setBulkClaims(selectedClaims)}><Check size={16} /> Approve Selected</AppButton>
+          </div>
+        )}
         <div className="sales-list">
           {visible.map((c) => {
             const inProgress = [
@@ -725,7 +752,10 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
                 c.approval?.decision,
               );
             return (
-              <article className="sales-card" key={c.id}>
+              <article className={`sales-card${view === "pending" && canApproveClaim(c) ? " sales-selectable" : ""}`} key={c.id}>
+                {view === "pending" && canApproveClaim(c) && (
+                  <Checkbox className="sales-case-select" aria-label={`Select ${c.serial}`} checked={selectedIds.includes(c.id)} onChange={(event) => setSelectedIds((current) => event.target.checked ? [...new Set([...current, c.id])] : current.filter((id) => id !== c.id))} />
+                )}
                 <div>
                   <AppButton
                     className="serial-link"
@@ -756,7 +786,7 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
                 </div>
                 <AppButton
                   className={
-                    inProgress || !canApprove ? "secondary" : "primary"
+                    inProgress || !canApproveClaim(c) ? "secondary" : "primary"
                   }
                   onClick={() => (inProgress ? setPreview(c) : setReview(c))}
                 >
@@ -764,7 +794,7 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
                     ? "View Case"
                     : decided
                       ? "View Decision"
-                      : canApprove
+                      : canApproveClaim(c)
                         ? "Review Result"
                         : "View Result"}
                 </AppButton>
@@ -792,9 +822,19 @@ function SalesApprovals({ claims, onClaimSaved, session }) {
       {review && (
         <ApprovalForm
           claim={review}
-          canApprove={canApprove}
+          canApprove={canApproveClaim(review)}
           onClose={() => setReview(null)}
           onSaved={onClaimSaved}
+        />
+      )}
+      {bulkClaims && (
+        <BulkApprovalDialog
+          claims={bulkClaims}
+          onClose={() => setBulkClaims(null)}
+          onClaimSaved={(claim) => {
+            onClaimSaved(claim);
+            setSelectedIds((current) => current.filter((id) => id !== claim.id));
+          }}
         />
       )}
     </>
