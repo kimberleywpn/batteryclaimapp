@@ -27,6 +27,9 @@
 .notify-sales-person small { color: var(--muted); font-size: .75rem; }
 .notify-sales-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .notify-sales-actions .ant-btn { min-height: 40px; }
+.notify-sales-preview-person { color:var(--muted); font-size:.84rem; }
+.notify-sales-preview-person strong { color:var(--ink); }
+.notify-sales-copy-error { margin-bottom:12px; }
 @media (width <= 680px) {
   .sales-toolbar-actions { width: 100%; flex-basis: 100%; }
   .sales-toolbar-actions .workspace-search { flex: 1 1 100%; }

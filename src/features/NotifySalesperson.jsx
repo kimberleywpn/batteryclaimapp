@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, Empty, Input, message, Modal, Tooltip } from "antd";
-import { Copy, Send } from "lucide-react";
+import { Copy, FileText, Send } from "lucide-react";
 import dayjs from "dayjs";
 import { AppButton } from "../components/AppControls";
 import { pendingBySalesperson, salespersonMessage } from "../utils/salesNotifications";
@@ -20,7 +20,9 @@ function readPreferences(key) {
 export default function NotifySalesperson({ claims, session }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
-  const [copyFallback, setCopyFallback] = useState("");
+  const [preview, setPreview] = useState(null);
+  const [copyError, setCopyError] = useState(false);
+  const [copying, setCopying] = useState(false);
   const storageKey = `celltrack_sales_reminders_v1:${session.id || session.username}`;
   const [preferences, setPreferences] = useState(() => readPreferences(storageKey));
   const groups = useMemo(() => pendingBySalesperson(claims), [claims]);
@@ -35,23 +37,28 @@ export default function NotifySalesperson({ claims, session }) {
       setError("Browser storage is unavailable. Prepared times will not be kept after closing this page.");
     }
   }
-  async function generateAndCopyMessage(group) {
+  function generateMessage(group) {
     setError("");
-    const text = salespersonMessage(group, window.location.href);
+    setCopyError(false);
+    setPreview({ ...group, text: salespersonMessage(group, window.location.href) });
+  }
+  async function copyMessage() {
+    if (!preview || copying) return;
+    setError(""); setCopyError(false); setCopying(true);
     try {
-      await navigator.clipboard.writeText(text);
-      rememberPrepared(group.key);
-      message.success("Message Generated And Copied");
+      await navigator.clipboard.writeText(preview.text);
+      rememberPrepared(preview.key);
+      message.success("Message Copied");
     } catch {
-      setCopyFallback(text);
-    }
+      setCopyError(true);
+    } finally { setCopying(false); }
   }
   return (
     <>
       <AppButton className="secondary" onClick={() => { setError(""); setOpen(true); }}>
         <Send size={16} /> Notify Salesperson
       </AppButton>
-      <Modal title="Notify Salesperson" open={open} onCancel={() => setOpen(false)} footer={null} width={820} className="notify-sales-modal">
+      <Modal title="Notify Salesperson" open={open} onCancel={() => { if (!copying) { setOpen(false); setPreview(null); } }} footer={null} width={820} className="notify-sales-modal">
         {error && <Alert type="warning" showIcon title={error} />}
         {!groups.length ? <Empty description="No Cases Awaiting Sales Review" /> : (
           <div className="notify-sales-list">
@@ -68,7 +75,7 @@ export default function NotifySalesperson({ claims, session }) {
                     </Tooltip>
                   </div>
                   <div className="notify-sales-actions">
-                    <AppButton className="primary" aria-label={`Generate and copy message for ${group.name}`} onClick={() => generateAndCopyMessage(group)}><Copy size={16} /> Generate &amp; Copy Message</AppButton>
+                    <AppButton className="primary" aria-label={`Generate message for ${group.name}`} onClick={() => generateMessage(group)}><FileText size={16} /> Generate Message</AppButton>
                   </div>
                 </div>
               );
@@ -76,9 +83,10 @@ export default function NotifySalesperson({ claims, session }) {
           </div>
         )}
       </Modal>
-      <Modal title="Copy Summary Message" open={Boolean(copyFallback)} onCancel={() => setCopyFallback("")} footer={<AppButton className="secondary" onClick={() => setCopyFallback("")}>Close</AppButton>}>
-        <p>Automatic copying is unavailable. Select and copy the message below.</p>
-        <Input.TextArea readOnly value={copyFallback} rows={6} autoFocus onFocus={(event) => event.target.select()} aria-label="Summary message" />
+      <Modal title="Message Preview" open={Boolean(preview)} zIndex={1100} width={640} closable={!copying} keyboard={!copying} mask={{ closable: !copying }} onCancel={() => !copying && setPreview(null)} footer={<><AppButton className="secondary" disabled={copying} onClick={() => setPreview(null)}>Close</AppButton><AppButton className="primary" aria-label="Copy Message" loading={copying} disabled={!preview || copying} onClick={copyMessage}><Copy size={16} />Copy Message</AppButton></>}>
+        <p className="notify-sales-preview-person"><strong>{preview?.name}</strong> · {preview?.count.toLocaleString()} awaiting review</p>
+        {copyError && <Alert className="notify-sales-copy-error" type="warning" showIcon title="Automatic copying is unavailable. Select and copy the message below." />}
+        <Input.TextArea readOnly value={preview?.text || ""} rows={6} onFocus={event => { if (copyError) event.target.select(); }} aria-label="Summary message preview" />
       </Modal>
     </>
   );
