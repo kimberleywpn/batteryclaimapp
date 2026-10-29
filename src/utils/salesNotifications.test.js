@@ -21,7 +21,7 @@ test("summaries combine each salesperson's pending cases and exclude other stage
 
 test("summary links retain the deployment path without carrying old search parameters", () => {
   const text = salespersonMessage({ name: "GKS", count: 2 }, "https://example.com/batteryclaimapp/?other=secret#old");
-  assert.equal(text, "Hi GKS, you have 2 battery claims awaiting your review in CellTrack.\nPlease review them here:\nhttps://example.com/batteryclaimapp/?page=sales&view=pending");
-  assert.match(salespersonMessage({ name: "Daniel", count: 1 }, "https://example.com/"), /1 battery claim awaiting/);
+  assert.equal(text, "2 battery claims awaiting your approval.\nReview: https://example.com/batteryclaimapp/?page=sales&view=pending");
+  assert.equal(salespersonMessage({ name: "Daniel", count: 1 }, "https://example.com/"), "1 battery claim awaiting your approval.\nReview: https://example.com/?page=sales&view=pending");
 });
 

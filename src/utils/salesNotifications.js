@@ -21,6 +21,6 @@ export function salesReviewUrl(href) {
 }
 
 export function salespersonMessage(group, href) {
-  return `Hi ${group.name}, you have ${group.count} battery claim${group.count === 1 ? "" : "s"} awaiting your review in CellTrack.\nPlease review them here:\n${salesReviewUrl(href)}`;
+  return `${group.count} battery claim${group.count === 1 ? "" : "s"} awaiting your approval.\nReview: ${salesReviewUrl(href)}`;
 }
 
