@@ -76,10 +76,10 @@ export function additionalMetrics(
     claimDate,
     reportToBackDays: elapsedDays(
       claim.claimDate,
-      warehouse.receivedDate || warehouse.inspectionDate,
+      warehouse.receivedDate,
     ),
     backToCheckedDays: elapsedDays(
-      warehouse.receivedDate || warehouse.inspectionDate,
+      warehouse.receivedDate,
       warehouse.secondTestDate,
     ),
     usedPeriodDays,

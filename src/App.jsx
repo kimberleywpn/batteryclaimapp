@@ -31,6 +31,7 @@ import {
   List,
   LogOut,
   PackageOpen,
+  Package,
   Plus,
   Printer,
   Search as SearchIcon,
@@ -52,23 +53,25 @@ import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } fr
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
 const ReportPanel = lazy(() => import("./features/ReportPanel"));
+const BatteryStock = lazy(() => import("./features/BatteryStock"));
 const brandLogo = `${import.meta.env.BASE_URL}kai-shen-logo.svg`;
 
 const pages = [
   { id: "claims", label: "Claims Operations", icon: List },
+  { id: "stock", label: "Battery Stock", icon: Package },
   { id: "sales", label: "Sales Approvals", icon: ShieldCheck },
   { id: "dashboard", label: "Management Dashboard", icon: BarChart3 },
 ];
 
 const pagesForRole = (role) => {
   if (role === "manager") return pages.filter((item) => item.id === "dashboard");
-  if (role === "sales") return pages.filter((item) => item.id !== "claims");
-  if (role === "warehouse_preview") return pages.filter((item) => item.id === "claims");
-  return pages;
+  if (role === "sales") return pages.filter((item) => ["sales", "dashboard"].includes(item.id));
+  if (role === "warehouse_preview") return pages.filter((item) => ["claims", "stock"].includes(item.id));
+  return ["owner", "admin"].includes(role) ? pages : pages.filter((item) => item.id !== "stock");
 };
 const roleLabel = (role) => role === "warehouse_preview" ? "Warehouse Preview" : role;
 
-function SignIn({ onSuccess }) {
+function SignIn({ onSuccess, startupError }) {
   const [formApi] = Form.useForm();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -123,6 +126,9 @@ function SignIn({ onSuccess }) {
         </Form.Item>
         {error && (
           <Alert className="app-alert" type="error" showIcon message={error} />
+        )}
+        {!error && startupError && (
+          <Alert className="app-alert" type="warning" showIcon message={startupError} />
         )}
         <AppButton className="primary" htmlType="submit" loading={busy}>
           {busy ? "Signing In..." : "Sign In"}
@@ -562,7 +568,7 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
             fields={[
               [
                 "Date Received",
-                warehouse.receivedDate || warehouse.inspectionDate,
+                warehouse.receivedDate,
               ],
               ["Battery Batch / Code", warehouse.batchCode],
               ["Production Date", warehouse.productDate],
@@ -1381,9 +1387,11 @@ function Claims({ claims, session, onClaimSaved, onClaimDeleted }) {
 function App() {
   const [session, setSession] = useState(undefined);
   const [claims, setClaims] = useState([]);
+  const [stockSourceClaim, setStockSourceClaim] = useState(null);
   const [page, setPage] = useState("claims");
   const [error, setError] = useState("");
   async function load(user) {
+    setError("");
     setSession(user);
     if (!user) return;
     const requestedPage = new URLSearchParams(window.location.search).get("page");
@@ -1396,7 +1404,7 @@ function App() {
     }
   }
   useEffect(() => {
-    api("/api/session")
+    api("/api/session", { timeoutMs: 12000 })
       .then((result) => load(result.user))
       .catch((err) => {
         setError(err.message);
@@ -1451,7 +1459,7 @@ function App() {
         </Spin>
       </div>
     );
-  if (!session) return <SignIn onSuccess={load} />;
+  if (!session) return <SignIn onSuccess={load} startupError={error} />;
   const allowed = pagesForRole(session.role);
   return (
     <div className="app">
@@ -1506,6 +1514,10 @@ function App() {
               setClaims((current) => current.filter((item) => item.id !== id))
             }
           />
+        ) : page === "stock" ? (
+          <Suspense fallback={<div className="loading-block"><Spin size="large" /></div>}>
+            <BatteryStock session={session} claims={claims} onOpenClaim={setStockSourceClaim} />
+          </Suspense>
         ) : page === "sales" ? (
           <SalesApprovals
             claims={claims}
@@ -1533,10 +1545,10 @@ function App() {
           </Suspense>
         )}
       </main>
+      {stockSourceClaim && <CasePreview claim={stockSourceClaim} onClose={() => setStockSourceClaim(null)} />}
       <BackToTop />
     </div>
   );
 }
 
 export default App;
-

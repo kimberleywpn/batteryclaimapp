@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Cascader, Collapse, Form, Image, Input, message, Modal, notification, Select, Upload as AntUpload } from "antd";
+import { Alert, Cascader, Checkbox, Collapse, Form, Image, Input, message, Modal, notification, Select, Spin, Upload as AntUpload } from "antd";
 import { Camera, Paperclip, Plus, Save, Search as SearchIcon, X } from "lucide-react";
 import dayjs from "dayjs";
 import { api } from "../api";
@@ -21,6 +21,7 @@ const emptyIntake = {
   invoiceNo: "",
   invoiceDate: "",
   itemDescription: "",
+  itemCode: "",
   batteryUsedMonths: "",
 };
 
@@ -130,6 +131,7 @@ export function ClaimForm({ claim, claims = [], onClose, onSaved }) {
           current.claimDate,
         ),
         itemDescription: row.itemDescription || current.itemDescription,
+        itemCode: row.itemCode || current.itemCode,
       });
       const lookupOptions = customerCascaderOptions([row]);
       setCustomerOptions(lookupOptions);
@@ -416,6 +418,8 @@ const adminResults = [
   "Dispose",
 ];
 const adminFieldNames = [
+  "keepForStock",
+  "stockReceivedDate",
   "result",
   "wanNo",
   "replaceItem",
@@ -445,8 +449,28 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
   const [previewImage, setPreviewImage] = useState("");
   const [wanLookupLoading, setWanLookupLoading] = useState(false);
   const [wanMatches, setWanMatches] = useState([]);
+  const [linkedStock, setLinkedStock] = useState(null);
+  const [stockLoading, setStockLoading] = useState(Boolean(claim.admin?.stockItemId));
+  const [stockError, setStockError] = useState("");
   const [error, setError] = useState("");
   const selectedResult = Form.useWatch("result", formApi);
+  const keepForStock = Form.useWatch("keepForStock", formApi) === "yes";
+  const stockItemId = claim.admin?.stockItemId;
+  useEffect(() => {
+    const controller = new AbortController();
+    setLinkedStock(null); setStockError(""); setStockLoading(Boolean(stockItemId));
+    if (!stockItemId) return () => controller.abort();
+    api(`/api/battery-stock/${stockItemId}`, { signal: controller.signal })
+      .then(({ item }) => {
+        if (controller.signal.aborted) return;
+        setLinkedStock(item);
+        formApi.setFieldValue("keepForStock", item.state === "cancelled" ? "" : "yes");
+        if (item.state === "cancelled") formApi.setFieldValue("stockReceivedDate", "");
+      })
+      .catch(err => { if (err.name !== "AbortError") setStockError(err.message); })
+      .finally(() => { if (!controller.signal.aborted) setStockLoading(false); });
+    return () => controller.abort();
+  }, [stockItemId, formApi]);
   const replacementItemExcluded = excludesReplacementItem(selectedResult);
   useEffect(() => {
     if (replacementItemExcluded) formApi.setFieldValue("replaceItem", "");
@@ -508,6 +532,10 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
   }
   async function save(action) {
     setError("");
+    if (stockLoading) {
+      setError("Wait For Battery Stock To Finish Loading.");
+      return;
+    }
     if (attachmentLoading) {
       setError("Wait For Supporting Documents To Finish Loading.");
       return;
@@ -537,7 +565,7 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
       if (excludesReplacementItem(data.result)) data.replaceItem = "";
       const result = await api(`/api/claims/${claim.id}/admin`, {
         method: "PUT",
-        body: JSON.stringify({ version: claim.version, action, data, files: attachments }),
+        body: JSON.stringify({ version: claim.version, action, data, files: attachments, ...(linkedStock?.state === "cancelled" && data.keepForStock === "yes" ? { stockReentry: { itemId: linkedStock.id, version: linkedStock.version } } : {}) }),
       });
       if (action === "submit") {
         message.success("Sent For Approval");
@@ -704,6 +732,25 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
               <TextArea rows={3} />
             </Form.Item>
           </div>
+        </fieldset>
+        <fieldset className="admin-section">
+          <legend>Battery Stock</legend>
+          {stockLoading ? <Spin size="small" /> : stockError ? <Alert type="error" showIcon title={stockError} /> : linkedStock && linkedStock.state !== "cancelled" ? (
+            <Checkbox checked disabled>Keep Battery For Stock</Checkbox>
+          ) : (
+            <>
+              <Form.Item name="keepForStock" getValueProps={(value) => ({ checked: value === "yes" })} getValueFromEvent={(event) => event.target.checked ? "yes" : ""}>
+                <Checkbox>Keep Battery For Stock</Checkbox>
+              </Form.Item>
+              {keepForStock && (
+                <div className="admin-fields">
+                  <Form.Item label="Stock-In Date" name="stockReceivedDate">
+                    <AppDatePicker placeholder="Claim Completion Date" />
+                  </Form.Item>
+                </div>
+              )}
+            </>
+          )}
         </fieldset>
         <Collapse
           className="additional-details"
@@ -890,7 +937,6 @@ const warehouseFieldNames = [
   "receivedDate",
   "firstTestDate",
   "secondTestDate",
-  "inspectionDate",
   "batchCode",
   "productDate",
   "judgment",

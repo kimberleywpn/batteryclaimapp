@@ -106,7 +106,7 @@ function reportRecord(claim) {
     cancellationReason: claim.cancellation?.reason || "",
     cancelledBy: claim.cancellation?.cancelledBy || "",
     cancelledDate: claim.cancellation?.cancelledAt?.slice(0, 10) || "",
-    receivedDate: warehouse.receivedDate || warehouse.inspectionDate || "",
+    receivedDate: warehouse.receivedDate || "",
     batchCode: warehouse.batchCode || "",
     productDate: warehouse.productDate || "",
     factory: warehouse.factory || "",
