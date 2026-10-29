@@ -23,9 +23,9 @@ export default function StockReportPanel({ items, movements, session, initialFil
   const preview = useMemo(() => {
     const sheets = stockReportSheets({ items, ...filters, rows: filtered.slice((currentPage - 1) * 10, currentPage * 10) });
     const sheet = sheets.at(-1);
-    const indexes = movementView ? [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1] : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, ...(filters.view === "out" ? [14, 15, 16, 17, 18, 19] : filters.view === "cancelled" ? [20, 21] : []), 13, 22];
+    const indexes = movementView ? [0, 3, 4, 2, 6, 7] : [0, 1, 5, 6, 7, 8, ...(filters.view === "out" ? [14, 15] : filters.view === "cancelled" ? [20] : [])];
     return {
-      columns: indexes.map(index => ({ title: sheet.rows[0][index], dataIndex: String(index), key: String(index), width: ["Description", "Dealer", "Reason / Remarks", "Remarks"].includes(sheet.rows[0][index]) ? 220 : 160, render: displayCell })),
+      columns: indexes.map(index => ({ title: sheet.rows[0][index], dataIndex: String(index), key: String(index), width: /Serial Number/.test(sheet.rows[0][index]) ? 180 : /OCV|CCA|Used Months/.test(sheet.rows[0][index]) ? 110 : 150, render: displayCell })),
       rows: sheet.rows.slice(1).map(row => ({ key: row.at(-1), ...Object.fromEntries(indexes.map(index => [String(index), row[index]])) })),
     };
   }, [items, filters, filtered, currentPage, movementView]);
@@ -39,7 +39,7 @@ export default function StockReportPanel({ items, movements, session, initialFil
   }
   const dateLabel = movementView ? "Movement Date" : filters.view === "out" ? "Stock-Out Date" : filters.view === "cancelled" ? "Cancellation Date" : "Stock-In Date";
   return <Modal className="stock-report-modal" title="Battery Stock Report" open width={1500} onCancel={() => !busy && onClose()} closable={!busy} mask={{ closable: !busy }} keyboard={!busy} footer={<div className="stock-report-footer"><span>Export includes all {filtered.length.toLocaleString()} matching {movementView ? "movements" : "batteries"} across every page.</span><div><AppButton className="secondary" disabled={busy} onClick={onClose}>Close</AppButton><AppButton className="primary" aria-label="Export Excel" disabled={busy || !!error || !filtered.length} loading={busy} onClick={download}><Download size={17} />Export Excel</AppButton></div></div>}>
-    <p className="stock-report-count">{stockViews[filters.view]} · {filtered.length.toLocaleString()} {movementView ? "movement records" : "batteries"}</p>
+    <p className="stock-report-count">{stockViews[filters.view]} · {filtered.length.toLocaleString()} {movementView ? "movement records" : "batteries"}. Additional details are included in the Excel export.</p>
     <fieldset className="stock-report-filters" disabled={busy}>
       <label>Report Type<Select aria-label="Report Type" disabled={busy} value={filters.view} onChange={value => change("view", value)} options={Object.entries(stockViews).map(([value, label]) => ({ value, label }))} /></label>
       <label className="stock-report-search">Search<Input aria-label="Search Report" disabled={busy} prefix={<Search size={16} />} placeholder="Serial, Model, Dealer..." value={filters.query} onChange={event => change("query", event.target.value)} allowClear /></label>

@@ -14,18 +14,18 @@
 .notify-sales-list { max-height: 65vh; overflow: auto; }
 .notify-sales-row {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) minmax(170px, 1fr);
-  align-items: start;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
   border-bottom: 1px solid var(--line);
-  padding: 18px 0;
+  padding: 14px 0;
 }
 .notify-sales-row:last-child { border-bottom: 0; }
-.notify-sales-person, .notify-sales-phone { display: grid; gap: 5px; min-width: 0; }
+.notify-sales-person { display: grid; gap: 5px; min-width: 0; }
 .notify-sales-person strong { font-size: 1rem; overflow-wrap: anywhere; }
-.notify-sales-person span, .notify-sales-phone span { font-size: .82rem; }
+.notify-sales-person span { font-size: .82rem; }
 .notify-sales-person small { color: var(--muted); font-size: .75rem; }
-.notify-sales-actions { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; }
+.notify-sales-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .notify-sales-actions .ant-btn { min-height: 40px; }
 @media (width <= 680px) {
   .sales-toolbar-actions { width: 100%; flex-basis: 100%; }
@@ -36,4 +36,3 @@
   .notify-sales-actions { justify-content: stretch; }
   .notify-sales-actions .ant-btn { flex: 1 1 100%; }
 }
-

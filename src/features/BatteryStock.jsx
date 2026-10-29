@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Empty, Input, Modal, Select, Spin, Statistic, Tabs, Tag, message } from "antd";
-import { ArrowDownToLine, ArrowUpFromLine, ChevronRight, Eye, FileText, Package, Pencil, RotateCcw, Save, Search, X } from "lucide-react";
+import { Alert, Empty, Input, Modal, Select, Spin, Tabs, Tag, message } from "antd";
+import { ArrowDownToLine, ArrowUpFromLine, ChevronRight, Eye, FileText, Pencil, RotateCcw, Save, Search, X } from "lucide-react";
 import dayjs from "dayjs";
 import { api } from "../api";
 import { AppButton, AppDatePicker, AppFieldInput, AppPagination, RangePicker } from "../components/AppControls";
@@ -135,7 +135,7 @@ function ModelStockDetails({ group, actions, page, onPageChange }) {
     <div className="stock-table-wrap"><table aria-label={`Batteries For ${group.model || "Model Not Recorded"}`}>
       <thead><tr><th>Previous Serial Number</th><th>Stock-In Date</th><th>Used Months</th><th>Latest Test</th><th>Actions</th></tr></thead>
       <tbody>{visibleItems.map(item => <tr key={item.id}>
-        <td className="stock-battery-identity"><strong>{item.sourceClaim?.serial || item.serial}</strong><Tag color={stateColor(item)}>{labelState(item)}</Tag></td>
+        <td className="stock-battery-identity" aria-label={`Previous Serial Number ${item.sourceClaim?.serial || item.serial}`}><strong>{item.sourceClaim?.serial || item.serial}</strong>{item.state !== "available" && <Tag color={stateColor(item)}>{labelState(item)}</Tag>}</td>
         <td data-label="Stock-In Date">{showDate(item.receivedDate)}</td>
         <td data-label="Used Months">{shown(item.usedMonths)}</td>
         <td data-label="Latest Test"><div className="stock-test-reading"><span><small>OCV</small><strong>{reading(item.ocv, "V")}</strong></span><span><small>CCA</small><strong>{reading(item.cca, "A")}</strong></span></div></td>
@@ -196,15 +196,15 @@ export default function BatteryStock({ session, claims, onOpenClaim }) {
   const actions = item => <div className="stock-row-actions">
     <AppButton type="text" title="View Battery" aria-label={`View ${item.serial}`} onClick={() => setDetailId(item.id)}><Eye size={17} /></AppButton>
     {isStockOnHand(item) && <AppButton type="text" title="Edit Details" aria-label={`Edit ${item.serial}`} onClick={() => edit("update", item)}><Pencil size={17} /></AppButton>}
-    {isStockOnHand(item) && <AppButton type="text" title="Stock Out" aria-label={`Stock Out ${item.serial}`} onClick={() => edit("out", item)}><ArrowUpFromLine size={17} /></AppButton>}
+    {isStockOnHand(item) && <AppButton className="secondary stock-out-action" title="Stock Out" aria-label={`Stock Out ${item.serial}`} onClick={() => edit("out", item)}><ArrowUpFromLine size={17} />Stock Out</AppButton>}
   </div>;
   if (!permitted) return <Alert type="error" title="Battery Stock access required." />;
   return (
     <div className="battery-stock">
       <div className="stock-heading"><h1>Battery Stock</h1><div><AppButton className="secondary" disabled={loading} onClick={() => setReportOpen(true)}><FileText size={17} />Report</AppButton><AppButton className="primary" onClick={() => setDialog({ mode: "in" })}><ArrowDownToLine size={17} />Stock In</AppButton></div></div>
-      <div className="stock-metrics">{[
-        ["Available", onHand.length], ["Out", items.filter(item => item.state === "out").length], ["Cancelled", items.filter(item => item.state === "cancelled").length],
-      ].map(([title, value]) => <article key={title}><Package size={20} /><Statistic title={title} value={value} /></article>)}</div>
+      <div className="stock-metrics" aria-label="Stock Totals">{[
+        ["Available", onHand.length], ["Out", items.filter(item => item.state === "out").length],
+      ].map(([title, value]) => <article key={title}><span>{title}</span><strong>{value.toLocaleString()}</strong></article>)}</div>
       {error && <Alert className="stock-error" type="error" showIcon title={error} />}
       <section className="stock-workspace">
         <Tabs activeKey={view} onChange={setView} items={[{ key: "in", label: "In Stock" }, { key: "out", label: "Out" }, { key: "cancelled", label: "Cancelled" }, { key: "movements", label: "Movements" }]} />
@@ -214,7 +214,7 @@ export default function BatteryStock({ session, claims, onOpenClaim }) {
           <RangePicker aria-label="Filter Stock Dates" value={range} onChange={setRange} format="DD-MM-YYYY" />
           <AppButton type="text" title="Clear Filters" aria-label="Clear Filters" onClick={() => { setQuery(""); setBrand(undefined); setRange(null); }}><X size={17} /></AppButton>
         </div>
-        {loading ? <div className="loading-block"><Spin /></div> : !visible.length ? <Empty className="stock-empty" description="No Stock Records Found" /> : view === "movements" ? (
+        {loading ? <div className="loading-block"><Spin /></div> : !visible.length ? <Empty className="stock-empty" description={<div className="stock-empty-copy"><strong>{!items.length && !error ? "No Batteries In Stock Yet" : "No Matching Stock Records"}</strong><p>{!items.length && !error ? <>In Admin Process, select <strong>Keep Battery For Stock</strong> and complete the claim to add the battery here. You can also use <strong>Stock In</strong> to add a battery manually.</> : "Try changing the filters or selecting another stock tab."}</p></div>} /> : view === "movements" ? (
           <div className="stock-ledger">{visible.map(event => <article key={event.id}>
             <div><strong>{event.serial}</strong><span>{event.model}</span></div><div><strong>{kinds[event.kind]}</strong><span>{showDate(event.date)} | {event.actor}</span></div>
             <span>{event.details.recipient || event.details.reason || event.details.remarks || ""}</span>

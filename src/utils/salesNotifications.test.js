@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { pendingBySalesperson, salespersonMessage, whatsappUrl } from "./salesNotifications.js";
+import { pendingBySalesperson, salespersonMessage } from "./salesNotifications.js";
 
 test("summaries combine each salesperson's pending cases and exclude other stages", () => {
   const claims = [
@@ -23,15 +23,5 @@ test("summary links retain the deployment path without carrying old search param
   const text = salespersonMessage({ name: "GKS", count: 2 }, "https://example.com/batteryclaimapp/?other=secret#old");
   assert.equal(text, "Hi GKS, you have 2 battery claims awaiting your review in CellTrack.\nPlease review them here:\nhttps://example.com/batteryclaimapp/?page=sales&view=pending");
   assert.match(salespersonMessage({ name: "Daniel", count: 1 }, "https://example.com/"), /1 battery claim awaiting/);
-});
-
-test("WhatsApp uses international numbers or lets the admin choose a contact", () => {
-  const text = "Please review\nhttps://example.com/?page=sales&view=pending";
-  const url = new URL(whatsappUrl("+60 (12) 345-6789", text));
-  assert.equal(url.pathname, "/60123456789");
-  assert.equal(url.searchParams.get("text"), text);
-  assert.equal(new URL(whatsappUrl("", text)).pathname, "/");
-  assert.throws(() => whatsappUrl("0123456789", text), /international number/);
-  assert.throws(() => whatsappUrl("601234<script>", text), /international number/);
 });
 
