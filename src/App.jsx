@@ -49,6 +49,8 @@ import { AdminProcess, ApprovalForm, ClaimForm, WarehouseData } from "./features
 import MobileCodeScanner from "./components/MobileCodeScanner";
 import NotifySalesperson from "./features/NotifySalesperson";
 import BulkApprovalDialog from "./features/BulkApprovalDialog";
+import { RemarksContent } from "./components/RemarkLinks";
+import { attachmentLinkRows } from "./utils/remarkLinks";
 import { additionalMetrics, formatDisplayDate, shown, stageLabel, titleCase } from "./utils/claimFormatting";
 
 const ManagementDashboard = lazy(() => import("./features/ManagementDashboard"));
@@ -240,9 +242,9 @@ function DetailFields({ fields }) {
   return (
     <div className="detail-grid">
       {fields.map(([label, value, breakBefore]) => (
-        <div className={`detail-field${breakBefore ? " detail-field-break" : ""}`} key={label}>
+        <div className={`detail-field${breakBefore ? " detail-field-break" : ""}${label === "Remarks" ? " remarks-field" : ""}`} key={label}>
           <span>{label}</span>
-          <strong>{previewShown(value)}</strong>
+          {label === "Remarks" && value ? <RemarksContent value={value} /> : <strong>{previewShown(value)}</strong>}
         </div>
       ))}
     </div>
@@ -455,7 +457,8 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
     ["Direct Replaced S/N", admin.directReplacedSerialNo],
     ["Remarks", admin.remarks1],
   ];
-  const hasAdditionalDetails = additionalFields.some(
+  const hasAttachmentLinks = attachmentLinkRows(admin.attachmentLinks).length > 0;
+  const hasAdditionalDetails = hasAttachmentLinks || additionalFields.some(
     ([, value]) => value !== undefined && value !== null && value !== "",
   );
   return (
@@ -605,6 +608,12 @@ function CasePreview({ claim, onClose, onEdit, onCancelClaim, onDelete }) {
           <div className="preview-section">
             <h3>Additional Claim Details</h3>
             <DetailFields fields={additionalFields} />
+            {hasAttachmentLinks && (
+              <div className="attachment-links-preview" aria-label="Attachment Links">
+                <h4>Attachment Links</h4>
+                <RemarksContent value={admin.attachmentLinks} separateLinks />
+              </div>
+            )}
           </div>
         )}
         <div className="preview-section">

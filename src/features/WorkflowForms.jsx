@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import { api } from "../api";
 import { advanceFieldOnEnter, AppButton, AppDatePicker, AppFieldInput, SearchInput, TextArea } from "../components/AppControls";
 import { completedMonthsBetween, shown, titleCase } from "../utils/claimFormatting";
+import { AttachmentLinkEditor, RemarksContent } from "../components/RemarkLinks";
+import { attachmentLinkRows, attachmentLinksMaxLength, remarksMaxLength } from "../utils/remarkLinks";
 
 const emptyIntake = {
   serial: "",
@@ -435,6 +437,7 @@ const adminFieldNames = [
   "mileage2",
   "directReplacedSerialNo",
   "remarks1",
+  "attachmentLinks",
 ];
 const excludesReplacementItem = (result) => /return|reject/i.test(String(result || ""));
 
@@ -454,6 +457,7 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
   const [stockError, setStockError] = useState("");
   const [error, setError] = useState("");
   const selectedResult = Form.useWatch("result", formApi);
+  const attachmentLinks = Form.useWatch("attachmentLinks", formApi);
   const keepForStock = Form.useWatch("keepForStock", formApi) === "yes";
   const stockItemId = claim.admin?.stockItemId;
   useEffect(() => {
@@ -812,10 +816,22 @@ export function AdminProcess({ claim, onClose, onSaved, readOnly = false }) {
                     className="wide"
                     label="Remarks"
                     name="remarks1"
-                    normalize={(value) => String(value || "").toUpperCase()}
                   >
-                    <TextArea rows={2} />
+                    <TextArea className="remarks-textarea" rows={3} maxLength={remarksMaxLength} showCount autoCapitalize="none" autoCorrect="off" spellCheck={false} />
                   </Form.Item>
+                  <fieldset className="admin-section attachment-links-section wide">
+                    <legend>Attachment Links</legend>
+                    <Form.Item name="attachmentLinks" extra="Paste attachment URLs or labelled links from the notification email, one per line.">
+                      <TextArea className="remarks-textarea attachment-links-textarea" aria-label="Attachment Links" rows={3} wrap="off" maxLength={attachmentLinksMaxLength} showCount autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Photo Of Current Mileage: https://..." />
+                    </Form.Item>
+                    {!readOnly && <AttachmentLinkEditor formApi={formApi} disabled={busy} />}
+                    {attachmentLinkRows(attachmentLinks).length > 0 && (
+                      <div className="attachment-links-preview" aria-label="Attachment Links Preview">
+                        <strong>Link Preview</strong>
+                        <RemarksContent value={attachmentLinks} separateLinks />
+                      </div>
+                    )}
+                  </fieldset>
                 </div>
               ),
             },
