@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, DatePicker, Empty, Segmented, Spin, Table, Tooltip } from "antd";
 import { Download, Info } from "lucide-react";
 import dayjs from "dayjs";
-import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { AppButton, AppPagination, CheckFilter, SearchInput } from "../components/AppControls";
 import { brandName, stageLabel, titleCase } from "../utils/claimFormatting";
@@ -326,7 +326,6 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       .map((item) => ({
         ...item,
         label: dayjs(item.bucket).format(daily ? "D MMM" : "MMM YY"),
-        rate: item.sales > 0 ? Number(((item.claims / item.sales) * 100).toFixed(2)) : 0,
       }));
   }, [filteredSales, completed, from, to]);
   const resultChartData = useMemo(() => {
@@ -560,30 +559,40 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
       )}
       {!loading && !error && (
         <section className="dashboard-visuals">
-          <article className="surface dashboard-chart dashboard-trend-chart">
-            <div className="section-title">
-              <div>
-                <h2>Sales And Claims Trend</h2>
-                <p>Net sales, completed claims and claim rate by period</p>
-              </div>
+          <article className="surface dashboard-chart dashboard-trend-chart" style={{ gridColumn: "1 / -1" }}>
+            <div className="section-title"><h2>Sales &amp; Claims</h2></div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, margin: "16px 0 24px" }}>
+              {[
+                ["Sales Quantity", netSales.toLocaleString(), "Net sales in the selected period"],
+                ["Completed Claims", completed.length.toLocaleString(), "Matching the selected filters"],
+                ["Claim Rate", claimRate, netSales > 0 ? `${completed.length.toLocaleString()} claims / ${netSales.toLocaleString()} sales` : "No positive net sales to calculate a rate"],
+              ].map(([label, value, detail]) => (
+                <div key={label} style={{ border: "1px solid var(--line)", borderRadius: 6, padding: "14px 16px" }}>
+                  <div style={{ color: "var(--muted)", fontSize: ".8rem" }}>{label}</div>
+                  <strong style={{ display: "block", fontSize: "1.65rem", margin: "5px 0" }}>{value}</strong>
+                  <div style={{ color: "var(--muted)", fontSize: ".75rem" }}>{detail}</div>
+                </div>
+              ))}
             </div>
-            {trendData.length ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <ComposedChart data={trendData} margin={{ top: 12, right: 12, bottom: 0, left: -12 }}>
-                  <CartesianGrid stroke="var(--ash-grey)" vertical={false} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} />
-                  <YAxis yAxisId="count" tickLine={false} axisLine={false} fontSize={11} />
-                  <YAxis yAxisId="rate" orientation="right" tickFormatter={(value) => `${value}%`} tickLine={false} axisLine={false} fontSize={11} />
-                  <ChartTooltip contentStyle={{ background: "var(--chart-tooltip-bg)", borderColor: "var(--ash-grey)", borderRadius: 5 }} formatter={(value, name) => [name === "Claim Rate" ? `${value}%` : Number(value).toLocaleString(), name]} />
-                  <Legend />
-                  <Bar yAxisId="count" dataKey="sales" name="Net Sales" fill="var(--sky-blue-light)" radius={[3, 3, 0, 0]} maxBarSize={34} />
-                  <Line yAxisId="count" type="monotone" dataKey="claims" name="Claims" stroke="var(--light-caramel)" strokeWidth={2.5} dot={{ r: 3 }} />
-                  <Line yAxisId="rate" type="monotone" dataKey="rate" name="Claim Rate" stroke="var(--dusty-mauve)" strokeWidth={2} dot={false} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Trend Data" />
-            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 24 }}>
+              {[["sales", "Sales Trend", "Net Sales", "var(--sky-blue-light)"], ["claims", "Completed Claims Trend", "Completed Claims", "var(--light-caramel)"]].map(([key, title, label, color]) => (
+                <div key={key} style={{ minWidth: 0 }}>
+                  <h3 style={{ fontSize: ".9rem", margin: "0 0 6px" }}>{title}</h3>
+                  <p style={{ fontSize: ".75rem", color: "var(--muted)", margin: "0 0 12px" }}>{key === "sales" ? "Net quantity · invoice and credit note dates" : "Case count · settlement date"} · separate count scale</p>
+                  {trendData.length ? (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <BarChart data={trendData} syncId="sales-claims-trends" margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
+                        <CartesianGrid stroke="var(--line)" vertical={false} />
+                        <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} minTickGap={24} />
+                        <YAxis domain={[dataMin => Math.min(0, dataMin), "auto"]} allowDecimals={false} tickLine={false} axisLine={false} fontSize={11} />
+                        <ChartTooltip contentStyle={{ background: "var(--chart-tooltip-bg)", borderColor: "var(--line)", borderRadius: 5 }} formatter={value => [Number(value).toLocaleString(), label]} />
+                        <Bar dataKey={key} name={label} fill={color} radius={[3, 3, 0, 0]} maxBarSize={34} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Trend Data" />}
+                </div>
+              ))}
+            </div>
           </article>
           <article className="surface dashboard-chart dashboard-result-chart">
             <div className="section-title">
