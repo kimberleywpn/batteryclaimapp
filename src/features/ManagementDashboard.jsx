@@ -647,11 +647,7 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
             <Info size={17} />
           </Tooltip>
         </div>
-        <div className="dashboard-summary">
-          <strong>Sales Quantity: {netSales.toLocaleString()}</strong>
-          <span>Completed Claims: {completed.length.toLocaleString()}</span>
-          <strong>Period Claim Rate: {claimRate}</strong>
-        </div>
+
         {loading ? (
           <Spin description="Loading AutoCount Sales...">
             <div className="loading-block" />
