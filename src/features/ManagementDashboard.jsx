@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, DatePicker, Empty, Segmented, Spin, Table, Tooltip } from "antd";
 import { Download, Info } from "lucide-react";
 import dayjs from "dayjs";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
+import { Line, LineChart, LabelList, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api";
 import { AppButton, AppPagination, CheckFilter, SearchInput } from "../components/AppControls";
 import { brandName, stageLabel, titleCase } from "../utils/claimFormatting";
@@ -574,25 +574,28 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
                 </div>
               ))}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 24 }}>
-              {[["sales", "Sales Trend", "Net Sales", "var(--sky-blue-light)"], ["claims", "Completed Claims Trend", "Completed Claims", "var(--light-caramel)"]].map(([key, title, label, color]) => (
-                <div key={key} style={{ minWidth: 0 }}>
-                  <h3 style={{ fontSize: ".9rem", margin: "0 0 6px" }}>{title}</h3>
-                  <p style={{ fontSize: ".75rem", color: "var(--muted)", margin: "0 0 12px" }}>{key === "sales" ? "Net quantity · invoice and credit note dates" : "Case count · settlement date"} · separate count scale</p>
-                  {trendData.length ? (
-                    <ResponsiveContainer width="100%" height={260}>
-                      <BarChart data={trendData} syncId="sales-claims-trends" margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
-                        <CartesianGrid stroke="var(--line)" vertical={false} />
-                        <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} minTickGap={24} />
-                        <YAxis domain={[dataMin => Math.min(0, dataMin), "auto"]} allowDecimals={false} tickLine={false} axisLine={false} fontSize={11} />
-                        <ChartTooltip contentStyle={{ background: "var(--chart-tooltip-bg)", borderColor: "var(--line)", borderRadius: 5 }} formatter={value => [Number(value).toLocaleString(), label]} />
-                        <Bar dataKey={key} name={label} fill={color} radius={[3, 3, 0, 0]} maxBarSize={34} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Trend Data" />}
-                </div>
-              ))}
-            </div>
+            {trendData.length ? <>
+<h3>Sales &amp; Claims Quantity</h3>
+<ResponsiveContainer width="100%" height={280}>
+<BarChart data={trendData} syncId="trend" margin={{top:24,right:24,left:0,bottom:0}}>
+<CartesianGrid vertical={false} stroke="var(--line)" />
+<XAxis dataKey="label" minTickGap={24} />
+<YAxis allowDecimals={false} domain={[v => Math.min(0,v), "auto"]} />
+<ChartTooltip /><Legend />
+<Bar dataKey="sales" name="Net Sales" fill="#138b92" maxBarSize={40} />
+<Bar dataKey="claims" name="Completed Claims" fill="#d68a35" maxBarSize={40}><LabelList dataKey="claims" position="top" fontSize={11} /></Bar>
+</BarChart></ResponsiveContainer>
+<h3>Claim Rate</h3>
+<p style={{color:"var(--muted)",fontSize:12}}>Claims ÷ net sales · percentage scale starts at zero, with a minimum range of 5%.</p>
+<ResponsiveContainer width="100%" height={210}>
+<LineChart data={trendData.map(r => ({...r,rate:r.sales>0?r.claims/r.sales*100:null}))} syncId="trend" margin={{top:24,right:24,left:0,bottom:0}}>
+<CartesianGrid vertical={false} stroke="var(--line)" />
+<XAxis dataKey="label" minTickGap={24} />
+<YAxis domain={[0,v => Math.max(5,Math.ceil(v))]} tickFormatter={v => v+"%"} />
+<ChartTooltip formatter={v => [Number(v).toFixed(2)+"%","Claim Rate"]} />
+<Line dataKey="rate" name="Claim Rate" stroke="#6074ad" strokeWidth={2} connectNulls={false}><LabelList dataKey="rate" position="top" fontSize={11} formatter={v => v==null?"":Number(v).toFixed(2)+"%"} /></Line>
+</LineChart></ResponsiveContainer>
+</> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Trend Data" />}
           </article>
           <article className="surface dashboard-chart dashboard-result-chart">
             <div className="section-title">
