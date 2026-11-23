@@ -578,22 +578,22 @@ export default function ManagementDashboard({ claims, session, CasePreviewCompon
 <h3>Sales &amp; Claims Quantity</h3>
 <ResponsiveContainer width="100%" height={280}>
 <BarChart data={trendData} syncId="trend" margin={{top:24,right:24,left:0,bottom:0}}>
-<CartesianGrid vertical={false} stroke="var(--line)" />
-<XAxis dataKey="label" minTickGap={24} />
-<YAxis allowDecimals={false} domain={[v => Math.min(0,v), "auto"]} />
-<ChartTooltip /><Legend />
-<Bar dataKey="sales" name="Net Sales" fill="#138b92" maxBarSize={40} />
-<Bar dataKey="claims" name="Completed Claims" fill="#d68a35" maxBarSize={40}><LabelList dataKey="claims" position="top" fontSize={11} /></Bar>
+<CartesianGrid vertical={false} stroke="var(--ash-grey)" />
+<XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} minTickGap={24} />
+<YAxis allowDecimals={false} domain={[v => Math.min(0,v), "auto"]} tickLine={false} axisLine={false} fontSize={11} />
+<ChartTooltip contentStyle={{ background: "var(--chart-tooltip-bg)", borderColor: "var(--ash-grey)", borderRadius: 5 }} /><Legend />
+<Bar dataKey="sales" name="Net Sales" fill="var(--sky-blue-light)" maxBarSize={34} radius={[3, 3, 0, 0]} />
+<Bar dataKey="claims" name="Completed Claims" fill="var(--light-caramel)" maxBarSize={34} radius={[3, 3, 0, 0]}><LabelList dataKey="claims" position="top" fontSize={11} /></Bar>
 </BarChart></ResponsiveContainer>
-<h3>Claim Rate</h3>
+<h3 style={{ marginTop: 24 }}>Claim Rate</h3>
 <p style={{color:"var(--muted)",fontSize:12}}>Claims ÷ net sales · percentage scale starts at zero, with a minimum range of 5%.</p>
 <ResponsiveContainer width="100%" height={210}>
 <LineChart data={trendData.map(r => ({...r,rate:r.sales>0?r.claims/r.sales*100:null}))} syncId="trend" margin={{top:24,right:24,left:0,bottom:0}}>
-<CartesianGrid vertical={false} stroke="var(--line)" />
-<XAxis dataKey="label" minTickGap={24} />
-<YAxis domain={[0,v => Math.max(5,Math.ceil(v))]} tickFormatter={v => v+"%"} />
-<ChartTooltip formatter={v => [Number(v).toFixed(2)+"%","Claim Rate"]} />
-<Line dataKey="rate" name="Claim Rate" stroke="#6074ad" strokeWidth={2} connectNulls={false}><LabelList dataKey="rate" position="top" fontSize={11} formatter={v => v==null?"":Number(v).toFixed(2)+"%"} /></Line>
+<CartesianGrid vertical={false} stroke="var(--ash-grey)" />
+<XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} minTickGap={24} />
+<YAxis domain={[0,v => Math.max(5,Math.ceil(v))]} tickFormatter={v => v+"%"} tickLine={false} axisLine={false} fontSize={11} />
+<ChartTooltip contentStyle={{ background: "var(--chart-tooltip-bg)", borderColor: "var(--ash-grey)", borderRadius: 5 }} formatter={v => [Number(v).toFixed(2)+"%","Claim Rate"]} />
+<Line dataKey="rate" name="Claim Rate" stroke="var(--dry-sage)" strokeWidth={2} connectNulls={false}><LabelList dataKey="rate" position="top" fontSize={11} formatter={v => v==null?"":Number(v).toFixed(2)+"%"} /></Line>
 </LineChart></ResponsiveContainer>
 </> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Trend Data" />}
           </article>
